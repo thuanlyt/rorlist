@@ -2080,7 +2080,7 @@ export const groups = [
   {
     "id": "egyptian",
     "title": "Thần Ai Cập",
-    "subtitle": "Pantheon Ai Cập giúp danh sách bao quát hơn và bổ sung nhiều tên đẹp, sắc lạnh và quyền uy.",
+    "subtitle": "Pantheon Ai Cập mang sắc thái cổ đại, quyền uy, âm phủ và mặt trời.",
     "origin": "Ai Cập",
     "items": [
       {

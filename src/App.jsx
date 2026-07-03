@@ -17,6 +17,94 @@ import { PREFIX, allItems, groups, totalNames } from './data/names.js';
 
 const layoutModes = ['grid', 'compact', 'list'];
 
+const FENG_COLORS = {
+  thuy: '#38bdf8',
+  hoa: '#ef4444',
+  moc: '#22c55e',
+  kim: '#e5e7eb',
+  tho: '#f59e0b',
+  am: '#818cf8',
+};
+
+const FAMOUS_NAMES = {
+  Hades: { element: 'Thủy', color: FENG_COLORS.thuy },
+  Lucifer: { element: 'Hỏa', color: FENG_COLORS.hoa },
+  Zeus: { element: 'Mộc', color: FENG_COLORS.moc },
+  Poseidon: { element: 'Thủy', color: '#06b6d4' },
+  Ares: { element: 'Hỏa', color: '#f97316' },
+  Apollo: { element: 'Hỏa', color: '#fb7185' },
+  Athena: { element: 'Kim', color: '#cbd5e1' },
+  Artemis: { element: 'Mộc', color: '#84cc16' },
+  Thanatos: { element: 'Âm', color: FENG_COLORS.am },
+  Nyx: { element: 'Âm', color: '#a78bfa' },
+  Chaos: { element: 'Âm', color: '#94a3b8' },
+  Kronos: { element: 'Thổ', color: '#ca8a04' },
+  Atlas: { element: 'Thổ', color: '#f59e0b' },
+  Typhon: { element: 'Hỏa', color: '#f43f5e' },
+  Cerberus: { element: 'Hỏa', color: '#dc2626' },
+  Medusa: { element: 'Mộc', color: '#16a34a' },
+  Heracles: { element: 'Kim', color: '#f8fafc' },
+  Leonidas: { element: 'Kim', color: '#cbd5e1' },
+  Achilles: { element: 'Hỏa', color: '#fb923c' },
+  Perseus: { element: 'Kim', color: '#bfdbfe' },
+  Charon: { element: 'Thủy', color: '#67e8f9' },
+  Tartarus: { element: 'Âm', color: '#8b5cf6' },
+  Odin: { element: 'Thổ', color: '#f59e0b' },
+  Thor: { element: 'Kim', color: '#f8fafc' },
+  Loki: { element: 'Mộc', color: '#84cc16' },
+  Freya: { element: 'Mộc', color: '#4ade80' },
+  Frigg: { element: 'Kim', color: '#e2e8f0' },
+  Tyr: { element: 'Kim', color: '#cbd5e1' },
+  Baldr: { element: 'Hỏa', color: '#facc15' },
+  Heimdall: { element: 'Kim', color: '#e5e7eb' },
+  Hel: { element: 'Âm', color: '#a78bfa' },
+  Fenrir: { element: 'Thủy', color: '#60a5fa' },
+  Jormungandr: { element: 'Thủy', color: '#22d3ee' },
+  Ymir: { element: 'Thủy', color: '#7dd3fc' },
+  Surtr: { element: 'Hỏa', color: '#ef4444' },
+  Ragnarok: { element: 'Hỏa', color: '#f43f5e' },
+  Valhalla: { element: 'Kim', color: '#e5e7eb' },
+  'Lu Bu': { element: 'Hỏa', color: '#ef4444' },
+  Adam: { element: 'Kim', color: '#e5e7eb' },
+  'Kojiro Sasaki': { element: 'Thủy', color: '#67e8f9' },
+  'Jack the Ripper': { element: 'Thủy', color: '#93c5fd' },
+  'Raiden Tameemon': { element: 'Thổ', color: '#d97706' },
+  Buddha: { element: 'Thổ', color: '#eab308' },
+  'Qin Shi Huang': { element: 'Thổ', color: '#d97706' },
+  'Nikola Tesla': { element: 'Kim', color: '#a5b4fc' },
+  'Soji Okita': { element: 'Kim', color: '#bfdbfe' },
+  'Simo Hayha': { element: 'Thủy', color: '#7dd3fc' },
+  'Sakata Kintoki': { element: 'Thổ', color: '#f59e0b' },
+  'Michel Nostradamus': { element: 'Âm', color: '#c084fc' },
+  'Grigori Rasputin': { element: 'Âm', color: '#a78bfa' },
+  Shiva: { element: 'Hỏa', color: '#ec4899' },
+  Bishamonten: { element: 'Kim', color: '#e5e7eb' },
+  Zerofuku: { element: 'Âm', color: '#8b5cf6' },
+  Hajun: { element: 'Hỏa', color: '#dc2626' },
+  Beelzebub: { element: 'Âm', color: '#818cf8' },
+  "Susano'o no Mikoto": { element: 'Thủy', color: '#22d3ee' },
+  Anubis: { element: 'Thổ', color: '#ca8a04' },
+  Brunhilde: { element: 'Kim', color: '#cbd5e1' },
+  Goll: { element: 'Mộc', color: '#86efac' },
+  Thrud: { element: 'Thổ', color: '#f59e0b' },
+  Hlokk: { element: 'Mộc', color: '#22c55e' },
+  Alvitr: { element: 'Kim', color: '#bfdbfe' },
+  Gondul: { element: 'Hỏa', color: '#fb7185' },
+  Indra: { element: 'Kim', color: '#f8fafc' },
+  Kali: { element: 'Hỏa', color: '#e11d48' },
+  Amaterasu: { element: 'Hỏa', color: '#facc15' },
+  Tsukuyomi: { element: 'Thủy', color: '#60a5fa' },
+  Enma: { element: 'Thổ', color: '#ca8a04' },
+  Ra: { element: 'Hỏa', color: '#facc15' },
+  Horus: { element: 'Kim', color: '#e5e7eb' },
+  'Sun Wukong': { element: 'Hỏa', color: '#fb923c' },
+  Nezha: { element: 'Hỏa', color: '#f43f5e' },
+  'Cu Chulainn': { element: 'Mộc', color: '#22c55e' },
+  Morrigan: { element: 'Âm', color: '#a78bfa' },
+  'Ahura Mazda': { element: 'Hỏa', color: '#facc15' },
+};
+
+
 function safeRead(key, fallback) {
   if (typeof window === 'undefined') return fallback;
   return window.localStorage.getItem(key) || fallback;
@@ -41,6 +129,10 @@ async function copyToClipboard(text) {
 
 function makeDisplayName(name) {
   return `${PREFIX} ${name}`;
+}
+
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 function useOutsideClick(ref, onClose) {
@@ -75,6 +167,52 @@ function GroupSelect({ groups, value, onChange }) {
     value === 'all'
       ? `Tất cả nhóm (${groups.length})`
       : `${groups.find((group) => group.id === value)?.title || 'Tất cả nhóm'}`;
+
+
+  function scrollToTopAnimated() {
+    if (scrollFrameRef.current) cancelAnimationFrame(scrollFrameRef.current);
+
+    const root = document.documentElement;
+    const indicator = document.getElementById('scrollIndicator');
+    const startY = window.scrollY || document.documentElement.scrollTop || 0;
+    const distance = startY;
+    const duration = Math.min(1350, Math.max(620, distance * 0.72));
+    const startTime = performance.now();
+
+    root.classList.add('is-scroll-animating');
+
+    if (distance <= 4) {
+      if (indicator) indicator.style.width = '100%';
+      window.setTimeout(() => {
+        root.classList.remove('is-scroll-animating');
+        if (indicator) indicator.style.width = '0%';
+      }, 520);
+      return;
+    }
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeInOutCubic(progress);
+      const nextY = Math.round(startY * (1 - eased));
+
+      window.scrollTo(0, nextY);
+      if (indicator) indicator.style.width = `${Math.round(eased * 100)}%`;
+
+      if (progress < 1) {
+        scrollFrameRef.current = requestAnimationFrame(step);
+      } else {
+        window.scrollTo(0, 0);
+        if (indicator) indicator.style.width = '100%';
+        window.setTimeout(() => {
+          root.classList.remove('is-scroll-animating');
+          if (indicator) indicator.style.width = '0%';
+        }, 260);
+      }
+    }
+
+    scrollFrameRef.current = requestAnimationFrame(step);
+  }
 
   return (
     <div className="custom-select" ref={rootRef}>
@@ -129,6 +267,8 @@ function App() {
   const [query, setQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState('all');
   const [copied, setCopied] = useState('');
+  const scrollFrameRef = useRef(null);
+  const observerRef = useRef(null);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -174,9 +314,31 @@ function App() {
       greek: allItems.filter((item) => item.origin === 'Hy Lạp').length,
       norse: allItems.filter((item) => item.origin === 'Bắc Âu').length,
       canon: allItems.filter((item) => item.origin === 'RoR Canon').length,
+      famous: Object.keys(FAMOUS_NAMES).length,
     };
     return originCounts;
   }, []);
+
+
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observerRef.current?.unobserve(entry.target);
+          }
+        });
+      },
+      { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.1 }
+    );
+
+    document.querySelectorAll('.lazy-card').forEach((card) => observerRef.current.observe(card));
+
+    return () => observerRef.current?.disconnect();
+  }, [filteredGroups, layout]);
 
   async function handleCopy(id, text) {
     await copyToClipboard(text);
@@ -195,8 +357,55 @@ function App() {
     setActiveGroup('all');
   }
 
+
+  function scrollToTopAnimated() {
+    if (scrollFrameRef.current) cancelAnimationFrame(scrollFrameRef.current);
+
+    const root = document.documentElement;
+    const indicator = document.getElementById('scrollIndicator');
+    const startY = window.scrollY || document.documentElement.scrollTop || 0;
+    const distance = startY;
+    const duration = Math.min(1350, Math.max(620, distance * 0.72));
+    const startTime = performance.now();
+
+    root.classList.add('is-scroll-animating');
+
+    if (distance <= 4) {
+      if (indicator) indicator.style.width = '100%';
+      window.setTimeout(() => {
+        root.classList.remove('is-scroll-animating');
+        if (indicator) indicator.style.width = '0%';
+      }, 520);
+      return;
+    }
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeInOutCubic(progress);
+      const nextY = Math.round(startY * (1 - eased));
+
+      window.scrollTo(0, nextY);
+      if (indicator) indicator.style.width = `${Math.round(eased * 100)}%`;
+
+      if (progress < 1) {
+        scrollFrameRef.current = requestAnimationFrame(step);
+      } else {
+        window.scrollTo(0, 0);
+        if (indicator) indicator.style.width = '100%';
+        window.setTimeout(() => {
+          root.classList.remove('is-scroll-animating');
+          if (indicator) indicator.style.width = '0%';
+        }, 260);
+      }
+    }
+
+    scrollFrameRef.current = requestAnimationFrame(step);
+  }
+
   return (
     <main className={`app layout-${layout}`}>
+      <div className="scroll-to-top-indicator" id="scrollIndicator" aria-hidden="true" />
       <header className="hero">
         <nav className="topbar" aria-label="Main navigation">
           <a className="brand" href="#top" aria-label="Record of Ragnarok">
@@ -214,11 +423,11 @@ function App() {
         <section id="top" className="hero-panel">
           <div className="eyebrow">
             <Shield size={16} />
-            Master List · 28 nhóm · 332 tên
+            Name Archive
           </div>
-          <h1>Danh sách tên Record of Ragnarok</h1>
+          <h1>Record of Ragnarok Name Archive</h1>
           <p>
-            Danh sách mở rộng theo Hy Lạp, Bắc Âu, RoR Canon, các pantheon khác và nhóm phản thần. Một số tên có thể xuất hiện ở nhiều nhóm để phản ánh cả nguồn gốc thần thoại lẫn vai trò nổi bật trong anime.
+            Bộ sưu tập tên thần thoại và nhân vật huyền thoại lấy cảm hứng từ Record of Ragnarok. Danh sách được phân nhóm theo hệ thần, cõi giới, chiến binh, Valkyrie, quái vật và các nhân vật nổi bật trong đại chiến giữa người và thần.
           </p>
           <div className="stats" aria-label="Thống kê danh sách">
             <span><strong>{groups.length}</strong> nhóm</span>
@@ -226,6 +435,7 @@ function App() {
             <span><strong>{stats.greek}</strong> Hy Lạp</span>
             <span><strong>{stats.norse}</strong> Bắc Âu</span>
             <span><strong>{stats.canon}</strong> RoR Canon</span>
+            <span><strong>{stats.famous}</strong> nổi bật</span>
           </div>
         </section>
       </header>
@@ -266,23 +476,28 @@ function App() {
           <article className="group" key={group.id}>
             <header className="group-header">
               <div>
-                <span className="origin">{group.origin}</span>
+                <span className="origin">{group.origin} · {group.items.length} tên</span>
                 <h2>{group.title}</h2>
                 <p>{group.subtitle}</p>
               </div>
-              <span className="count">{group.items.length}</span>
             </header>
 
             <div className="cards">
-              {group.items.map((item) => {
+              {group.items.map((item, index) => {
                 const displayName = makeDisplayName(item.name);
                 const isCopied = copied === item.id;
+                const feng = FAMOUS_NAMES[item.name];
 
                 return (
-                  <article className="name-card" key={item.id}>
+                  <article
+                    className={`name-card lazy-card ${feng ? 'is-famous' : ''}`}
+                    key={`${group.id}-${item.id}`}
+                    style={feng ? { '--feng': feng.color, '--delay': index % 8 } : { '--delay': index % 8 }}
+                  >
                     <div className="name-body">
-                      <div className="name-meta">
+                      <div className="tag-row">
                         <span className="name-origin">{group.origin}</span>
+                        {feng && <span className="name-origin feng-tag">Mệnh {feng.element}</span>}
                       </div>
                       <h3>{displayName}</h3>
                       <p>{item.desc}</p>
@@ -326,7 +541,7 @@ function App() {
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
-        <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="Lên đầu trang">
+        <button type="button" onClick={scrollToTopAnimated} title="Lên đầu trang">
           <ArrowUp size={20} />
           <span>Top</span>
         </button>
