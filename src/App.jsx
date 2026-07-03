@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowUp,
   Check,
+  ChevronDown,
   Copy,
   Filter,
-  Layers,
   LayoutGrid,
   List,
   Moon,
@@ -41,6 +41,86 @@ async function copyToClipboard(text) {
 
 function makeDisplayName(name) {
   return `${PREFIX} ${name}`;
+}
+
+function useOutsideClick(ref, onClose) {
+  useEffect(() => {
+    function handlePointerDown(event) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        onClose();
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') onClose();
+    }
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [ref, onClose]);
+}
+
+function GroupSelect({ groups, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  useOutsideClick(rootRef, () => setOpen(false));
+
+  const activeLabel =
+    value === 'all'
+      ? `Tất cả nhóm (${groups.length})`
+      : `${groups.find((group) => group.id === value)?.title || 'Tất cả nhóm'}`;
+
+  return (
+    <div className="custom-select" ref={rootRef}>
+      <button
+        className={`select-trigger ${open ? 'is-open' : ''}`}
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <Filter size={18} />
+        <span className="select-trigger-text">{activeLabel}</span>
+        <ChevronDown size={18} className={`select-chevron ${open ? 'is-open' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="select-menu" role="listbox" aria-label="Chọn nhóm">
+          <button
+            type="button"
+            className={`select-option ${value === 'all' ? 'is-active' : ''}`}
+            onClick={() => {
+              onChange('all');
+              setOpen(false);
+            }}
+          >
+            <span>Tất cả nhóm</span>
+            <strong>{totalNames}</strong>
+          </button>
+          {groups.map((group) => (
+            <button
+              key={group.id}
+              type="button"
+              className={`select-option ${value === group.id ? 'is-active' : ''}`}
+              onClick={() => {
+                onChange(group.id);
+                setOpen(false);
+              }}
+            >
+              <span>{group.title}</span>
+              <strong>{group.items.length}</strong>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function App() {
@@ -89,6 +169,15 @@ function App() {
       .join('\n\n');
   }, []);
 
+  const stats = useMemo(() => {
+    const originCounts = {
+      greek: allItems.filter((item) => item.origin === 'Hy Lạp').length,
+      norse: allItems.filter((item) => item.origin === 'Bắc Âu').length,
+      canon: allItems.filter((item) => item.origin === 'RoR Canon').length,
+    };
+    return originCounts;
+  }, []);
+
   async function handleCopy(id, text) {
     await copyToClipboard(text);
     setCopied(id);
@@ -125,17 +214,18 @@ function App() {
         <section id="top" className="hero-panel">
           <div className="eyebrow">
             <Shield size={16} />
-            Mythology Master List
+            Master List · 28 nhóm · 332 tên
           </div>
           <h1>Danh sách tên Record of Ragnarok</h1>
           <p>
-            Bộ tên đã phân nhóm theo thần thoại Hy Lạp, Bắc Âu và nhóm phản thần/vực sâu. Mỗi ô tên đều có nút copy riêng để dùng nhanh cho game, clan, Discord hoặc landing.
+            Danh sách mở rộng theo Hy Lạp, Bắc Âu, RoR Canon, các pantheon khác và nhóm phản thần. Một số tên có thể xuất hiện ở nhiều nhóm để phản ánh cả nguồn gốc thần thoại lẫn vai trò nổi bật trong anime.
           </p>
           <div className="stats" aria-label="Thống kê danh sách">
             <span><strong>{groups.length}</strong> nhóm</span>
             <span><strong>{totalNames}</strong> tên</span>
-            <span><strong>{allItems.filter((item) => item.origin === 'Hy Lạp').length}</strong> Hy Lạp</span>
-            <span><strong>{allItems.filter((item) => item.origin === 'Bắc Âu').length}</strong> Bắc Âu</span>
+            <span><strong>{stats.greek}</strong> Hy Lạp</span>
+            <span><strong>{stats.norse}</strong> Bắc Âu</span>
+            <span><strong>{stats.canon}</strong> RoR Canon</span>
           </div>
         </section>
       </header>
@@ -156,17 +246,7 @@ function App() {
           )}
         </label>
 
-        <label className="select-box">
-          <Filter size={18} />
-          <select value={activeGroup} onChange={(event) => setActiveGroup(event.target.value)}>
-            <option value="all">Tất cả nhóm</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.title} · {group.items.length}
-              </option>
-            ))}
-          </select>
-        </label>
+        <GroupSelect groups={groups} value={activeGroup} onChange={setActiveGroup} />
 
         <button className="soft-button" type="button" onClick={() => handleCopy('copy-all-toolbar', allText)}>
           {copied === 'copy-all-toolbar' ? <Check size={16} /> : <Copy size={16} />}
@@ -196,12 +276,14 @@ function App() {
             <div className="cards">
               {group.items.map((item) => {
                 const displayName = makeDisplayName(item.name);
-                const text = `${displayName}: ${item.desc}`;
                 const isCopied = copied === item.id;
 
                 return (
                   <article className="name-card" key={item.id}>
                     <div className="name-body">
+                      <div className="name-meta">
+                        <span className="name-origin">{group.origin}</span>
+                      </div>
                       <h3>{displayName}</h3>
                       <p>{item.desc}</p>
                     </div>
@@ -223,7 +305,7 @@ function App() {
 
         {filteredGroups.length === 0 && (
           <div className="empty-state">
-            <Layers size={36} />
+            <Search size={36} />
             <h2>Không tìm thấy tên phù hợp</h2>
             <p>Thử đổi từ khóa hoặc chọn lại nhóm khác.</p>
             <button type="button" onClick={clearFilters}>Xóa lọc</button>

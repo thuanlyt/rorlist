@@ -1,13 +1,16 @@
-# Record of Ragnarok · Mythology List
+# Record of Ragnarok · Mythology Master List
 
 Source landing page cho danh sách tên Record of Ragnarok.
 
 ## Nội dung
 
-- 18 nhóm
-- 250 tên
+- 28 nhóm
+- 332 tên
 - Giữ đủ 100 tên cũ
-- Bổ sung hệ Bắc Âu
+- Có bổ sung hệ Bắc Âu
+- Có bổ sung các nhóm nổi bật trong anime `Record of Ragnarok`
+- Có thêm RoR Canon: Einherjar, Đấu Sĩ Thần, 13 Valkyrie
+- Có thêm Ấn Độ, Nhật Bản, Ai Cập, Phương Đông, Celtic / Ba Tư
 - Có nhóm riêng cho Ngoại thần / Phản thần / Vực sâu
 - Dùng React + Vite
 - Icon dùng `lucide-react`
@@ -16,6 +19,13 @@ Source landing page cho danh sách tên Record of Ragnarok.
 - Copy từng tên
 - Copy toàn bộ danh sách
 - Tìm kiếm và lọc theo nhóm
+- Dropdown đã chuyển sang custom dropdown để tránh lỗi giao diện trên mobile
+- Card tên đã được làm nổi bật hơn bằng nền accent nhẹ và viền accent rõ hơn
+
+## Lưu ý dữ liệu
+
+Một số tên có thể xuất hiện ở nhiều nhóm.
+Ví dụ một nhân vật vừa nằm trong nhóm nguồn gốc thần thoại, vừa nằm trong nhóm `RoR Canon` để phản ánh đúng vai trò nổi bật trong anime.
 
 ## Cấu trúc
 

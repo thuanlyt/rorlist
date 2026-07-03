@@ -1644,8 +1644,580 @@ export const groups = [
         "origin": "Ngoại hệ"
       }
     ]
+  },
+  {
+    "id": "ror-einherjar",
+    "title": "Record of Ragnarok · Einherjar",
+    "subtitle": "Những đại diện mạnh nhất của nhân loại bước vào Ragnarok để đối đầu các vị thần.",
+    "origin": "RoR Canon",
+    "items": [
+      {
+        "id": "ror-einherjar-lu-bu",
+        "name": "Lu Bu",
+        "desc": "chiến thần Tam Quốc đại diện cho sức mạnh thuần túy",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-adam",
+        "name": "Adam",
+        "desc": "cha của nhân loại và biểu tượng phản kháng",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-kojiro-sasaki",
+        "name": "Kojiro Sasaki",
+        "desc": "kiếm sĩ thất bại vĩ đại nhất Nhật Bản",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-jack-the-ripper",
+        "name": "Jack the Ripper",
+        "desc": "sát nhân London với trí tuệ quỷ quyệt",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-raiden-tameemon",
+        "name": "Raiden Tameemon",
+        "desc": "võ sĩ sumo mạnh nhất Nhật Bản",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-buddha",
+        "name": "Buddha",
+        "desc": "đấng giác ngộ phản thần bảo vệ nhân loại",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-qin-shi-huang",
+        "name": "Qin Shi Huang",
+        "desc": "Tần Thủy Hoàng với khí chất đế vương",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-nikola-tesla",
+        "name": "Nikola Tesla",
+        "desc": "thiên tài khoa học của nhân loại",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-leonidas",
+        "name": "Leonidas",
+        "desc": "vua chiến binh Sparta đại diện cho ý chí chiến đấu",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-soji-okita",
+        "name": "Soji Okita",
+        "desc": "kiếm sĩ thiên tài của Shinsengumi",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-simo-hayha",
+        "name": "Simo Hayha",
+        "desc": "xạ thủ tuyết trắng với độ chính xác lạnh lùng",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-sakata-kintoki",
+        "name": "Sakata Kintoki",
+        "desc": "anh hùng dân gian Nhật Bản với sức mạnh quái vật",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-michel-nostradamus",
+        "name": "Michel Nostradamus",
+        "desc": "nhà tiên tri khó lường của nhân loại",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-einherjar-grigori-rasputin",
+        "name": "Grigori Rasputin",
+        "desc": "tu sĩ thần bí với sức sống khó hiểu",
+        "origin": "RoR Canon"
+      }
+    ]
+  },
+  {
+    "id": "ror-gods-fighters",
+    "title": "Record of Ragnarok · Đấu Sĩ Thần",
+    "subtitle": "Những chiến binh thần linh nổi bật trực tiếp tham chiến hoặc giữ vai trò trọng yếu trong anime.",
+    "origin": "RoR Canon",
+    "items": [
+      {
+        "id": "ror-gods-fighters-thor",
+        "name": "Thor",
+        "desc": "thần sấm Bắc Âu, chiến binh mở màn của phe thần",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-zeus",
+        "name": "Zeus",
+        "desc": "chủ tể Olympus và một trong các đấu sĩ mạnh nhất",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-poseidon",
+        "name": "Poseidon",
+        "desc": "thần biển cả với phong thái cao ngạo tuyệt đối",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-heracles",
+        "name": "Heracles",
+        "desc": "anh hùng thần thánh mang lý tưởng công lý",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-shiva",
+        "name": "Shiva",
+        "desc": "thần hủy diệt Ấn Độ với điệu vũ chiến thần",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-bishamonten",
+        "name": "Bishamonten",
+        "desc": "chiến thần Nhật Bản thuộc Thất Phúc Thần",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-zerofuku",
+        "name": "Zerofuku",
+        "desc": "thần bất hạnh tích tụ oán niệm",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-hajun",
+        "name": "Hajun",
+        "desc": "ma thần hủy diệt bùng phát từ cơ thể Zerofuku",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-hades",
+        "name": "Hades",
+        "desc": "vua cõi âm và niềm kiêu hãnh của Hy Lạp",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-beelzebub",
+        "name": "Beelzebub",
+        "desc": "chúa ruồi thiên tài với sức mạnh hủy diệt",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-apollo",
+        "name": "Apollo",
+        "desc": "thần ánh sáng rực rỡ và kiêu hùng",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-susano-o-no-mikoto",
+        "name": "Susano'o no Mikoto",
+        "desc": "thần bão tố Nhật Bản với phong thái kiếm khách",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-loki",
+        "name": "Loki",
+        "desc": "thần lừa lọc Bắc Âu luôn ẩn chứa âm mưu",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-odin",
+        "name": "Odin",
+        "desc": "thần tối cao Bắc Âu quan sát Ragnarok",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-gods-fighters-anubis",
+        "name": "Anubis",
+        "desc": "thần âm phủ Ai Cập đầy bí ẩn",
+        "origin": "RoR Canon"
+      }
+    ]
+  },
+  {
+    "id": "ror-valkyries",
+    "title": "Record of Ragnarok · 13 Valkyrie",
+    "subtitle": "13 chị em Valkyrie hỗ trợ nhân loại thông qua Volundr và là linh hồn của Ragnarok.",
+    "origin": "RoR Canon",
+    "items": [
+      {
+        "id": "ror-valkyries-brunhilde",
+        "name": "Brunhilde",
+        "desc": "trưởng nữ Valkyrie và người khởi xướng Ragnarok",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-goll",
+        "name": "Goll",
+        "desc": "em út Valkyrie với trái tim trong sáng",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-randgriz",
+        "name": "Randgriz",
+        "desc": "Valkyrie đồng hành cùng Lu Bu",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-reginleif",
+        "name": "Reginleif",
+        "desc": "Valkyrie hợp nhất cùng Adam",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-hrist",
+        "name": "Hrist",
+        "desc": "Valkyrie song tính đồng hành Kojiro Sasaki",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-hlokk",
+        "name": "Hlokk",
+        "desc": "Valkyrie tạo thần khí cho Jack the Ripper",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-thrud",
+        "name": "Thrud",
+        "desc": "Valkyrie đại diện cho sức mạnh của Raiden",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-alvitr",
+        "name": "Alvitr",
+        "desc": "Valkyrie đồng hành cùng Qin Shi Huang",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-gondul",
+        "name": "Gondul",
+        "desc": "Valkyrie hỗ trợ Nikola Tesla",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-geirolul",
+        "name": "Geirolul",
+        "desc": "Valkyrie mang hình tượng ngọn giáo",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-skalmold",
+        "name": "Skalmold",
+        "desc": "Valkyrie của thời đại kiếm",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-radgridr",
+        "name": "Radgridr",
+        "desc": "Valkyrie gắn với chiến lược và công kích",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-valkyries-skeggold",
+        "name": "Skeggold",
+        "desc": "Valkyrie của rìu chiến và uy lực",
+        "origin": "RoR Canon"
+      }
+    ]
+  },
+  {
+    "id": "hindu",
+    "title": "Thần Ấn Độ / Hindu",
+    "subtitle": "Những vị thần Ấn Độ nổi bật, vừa hợp thần thoại rộng hơn vừa gắn chặt với vibe Record of Ragnarok.",
+    "origin": "Ấn Độ",
+    "items": [
+      {
+        "id": "hindu-shiva",
+        "name": "Shiva",
+        "desc": "thần hủy diệt và tái sinh",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-rudra",
+        "name": "Rudra",
+        "desc": "dạng cuồng nộ cổ xưa của Shiva",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-indra",
+        "name": "Indra",
+        "desc": "thần sấm sét và chiến trận",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-agni",
+        "name": "Agni",
+        "desc": "thần lửa thiêng",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-brahma",
+        "name": "Brahma",
+        "desc": "thần sáng tạo",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-vishnu",
+        "name": "Vishnu",
+        "desc": "thần bảo hộ vũ trụ",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-varuna",
+        "name": "Varuna",
+        "desc": "thần nước và trật tự",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-ganesha",
+        "name": "Ganesha",
+        "desc": "thần trí tuệ và may mắn",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-parvati",
+        "name": "Parvati",
+        "desc": "nữ thần tình yêu và quyền năng",
+        "origin": "Ấn Độ"
+      },
+      {
+        "id": "hindu-kali",
+        "name": "Kali",
+        "desc": "nữ thần hủy diệt đầy uy mãnh",
+        "origin": "Ấn Độ"
+      }
+    ]
+  },
+  {
+    "id": "japanese",
+    "title": "Thần Nhật Bản / Shinto",
+    "subtitle": "Các vị thần và thần cách Nhật Bản nổi bật trong văn hóa và rất hợp với không khí Record of Ragnarok.",
+    "origin": "Nhật Bản",
+    "items": [
+      {
+        "id": "japanese-susano-o-no-mikoto",
+        "name": "Susano'o no Mikoto",
+        "desc": "thần bão tố và chiến đấu của Nhật Bản",
+        "origin": "Nhật Bản"
+      },
+      {
+        "id": "japanese-amaterasu",
+        "name": "Amaterasu",
+        "desc": "nữ thần mặt trời tối cao",
+        "origin": "Nhật Bản"
+      },
+      {
+        "id": "japanese-tsukuyomi",
+        "name": "Tsukuyomi",
+        "desc": "thần mặt trăng bí ẩn",
+        "origin": "Nhật Bản"
+      },
+      {
+        "id": "japanese-ebisu",
+        "name": "Ebisu",
+        "desc": "thần may mắn và thương nghiệp",
+        "origin": "Nhật Bản"
+      },
+      {
+        "id": "japanese-daikokuten",
+        "name": "Daikokuten",
+        "desc": "thần tài lộc và sung túc",
+        "origin": "Nhật Bản"
+      },
+      {
+        "id": "japanese-benzaiten",
+        "name": "Benzaiten",
+        "desc": "nữ thần âm nhạc và nghệ thuật",
+        "origin": "Nhật Bản"
+      },
+      {
+        "id": "japanese-fukurokuju",
+        "name": "Fukurokuju",
+        "desc": "thần trường thọ và trí tuệ",
+        "origin": "Nhật Bản"
+      },
+      {
+        "id": "japanese-hotei",
+        "name": "Hotei",
+        "desc": "thần vui vẻ và phúc lộc",
+        "origin": "Nhật Bản"
+      }
+    ]
+  },
+  {
+    "id": "buddhist",
+    "title": "Phật Giáo, Ma Thần và Âm Phủ",
+    "subtitle": "Nhóm nhân vật giao thoa giữa Phật giáo, âm phủ và các thực thể phản thần trong Record of Ragnarok.",
+    "origin": "Hỗn hợp",
+    "items": [
+      {
+        "id": "buddhist-buddha",
+        "name": "Buddha",
+        "desc": "đấng giác ngộ đứng về phía nhân loại",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "buddhist-enma",
+        "name": "Enma",
+        "desc": "vua phán xét cõi âm phương Đông",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "buddhist-zerofuku",
+        "name": "Zerofuku",
+        "desc": "thần bất hạnh bị vặn xoắn bởi đau khổ",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "buddhist-hajun",
+        "name": "Hajun",
+        "desc": "ma thần hủy diệt từ vực sâu",
+        "origin": "Hỗn hợp"
+      }
+    ]
+  },
+  {
+    "id": "egyptian",
+    "title": "Thần Ai Cập",
+    "subtitle": "Pantheon Ai Cập giúp danh sách bao quát hơn và bổ sung nhiều tên đẹp, sắc lạnh và quyền uy.",
+    "origin": "Ai Cập",
+    "items": [
+      {
+        "id": "egyptian-anubis",
+        "name": "Anubis",
+        "desc": "thần ướp xác và dẫn đường linh hồn",
+        "origin": "Ai Cập"
+      },
+      {
+        "id": "egyptian-ra",
+        "name": "Ra",
+        "desc": "thần mặt trời tối cao của Ai Cập",
+        "origin": "Ai Cập"
+      },
+      {
+        "id": "egyptian-horus",
+        "name": "Horus",
+        "desc": "thần bầu trời và vương quyền",
+        "origin": "Ai Cập"
+      },
+      {
+        "id": "egyptian-bastet",
+        "name": "Bastet",
+        "desc": "nữ thần mèo và bảo hộ",
+        "origin": "Ai Cập"
+      },
+      {
+        "id": "egyptian-isis",
+        "name": "Isis",
+        "desc": "nữ thần ma thuật và mẫu tính",
+        "origin": "Ai Cập"
+      },
+      {
+        "id": "egyptian-sekhmet",
+        "name": "Sekhmet",
+        "desc": "nữ thần chiến tranh và bệnh dịch",
+        "origin": "Ai Cập"
+      }
+    ]
+  },
+  {
+    "id": "eastern",
+    "title": "Thần Thoại Trung Hoa và Phương Đông",
+    "subtitle": "Những cái tên phương Đông nổi bật để mở rộng danh sách mà vẫn giữ độ ngầu và quen thuộc.",
+    "origin": "Phương Đông",
+    "items": [
+      {
+        "id": "eastern-sun-wukong",
+        "name": "Sun Wukong",
+        "desc": "Tề Thiên Đại Thánh ngạo nghễ và bất khuất",
+        "origin": "Phương Đông"
+      },
+      {
+        "id": "eastern-nezha",
+        "name": "Nezha",
+        "desc": "Na Tra thiếu niên chiến thần",
+        "origin": "Phương Đông"
+      },
+      {
+        "id": "eastern-qinglong",
+        "name": "Qinglong",
+        "desc": "Thanh Long linh thú phương Đông",
+        "origin": "Phương Đông"
+      },
+      {
+        "id": "eastern-baihu",
+        "name": "Baihu",
+        "desc": "Bạch Hổ linh thú phương Tây",
+        "origin": "Phương Đông"
+      },
+      {
+        "id": "eastern-xuanwu",
+        "name": "Xuanwu",
+        "desc": "Huyền Vũ linh thú phương Bắc",
+        "origin": "Phương Đông"
+      }
+    ]
+  },
+  {
+    "id": "mixed-legends",
+    "title": "Celtic, Ba Tư và Truyền Thuyết Hỗn Hợp",
+    "subtitle": "Nhóm mở rộng cho các hệ thần thoại khác nhưng vẫn hợp chủ đề đại chiến và tận thế.",
+    "origin": "Hỗn hợp",
+    "items": [
+      {
+        "id": "mixed-legends-cu-chulainn",
+        "name": "Cu Chulainn",
+        "desc": "anh hùng Celtic với cơn cuồng chiến",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "mixed-legends-morrigan",
+        "name": "Morrigan",
+        "desc": "nữ thần chiến tranh và điềm báo tử vong",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "mixed-legends-ahura-mazda",
+        "name": "Ahura Mazda",
+        "desc": "thần tối cao của Ba Tư",
+        "origin": "Hỗn hợp"
+      }
+    ]
+  },
+  {
+    "id": "divine-beasts",
+    "title": "Thú Thiêng, Linh Vật và Chiến Mã",
+    "subtitle": "Những sinh vật hoặc linh vật gắn với chiến trận, thần linh và biểu tượng huyền thoại mạnh mẽ.",
+    "origin": "Hỗn hợp",
+    "items": [
+      {
+        "id": "divine-beasts-red-hare",
+        "name": "Red Hare",
+        "desc": "chiến mã huyền thoại của Lu Bu",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "divine-beasts-sleipnir",
+        "name": "Sleipnir",
+        "desc": "ngựa tám chân của Odin",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "divine-beasts-huginn",
+        "name": "Huginn",
+        "desc": "quạ tư tưởng của Odin",
+        "origin": "Hỗn hợp"
+      },
+      {
+        "id": "divine-beasts-muninn",
+        "name": "Muninn",
+        "desc": "quạ ký ức của Odin",
+        "origin": "Hỗn hợp"
+      }
+    ]
   }
 ];
 
 export const totalNames = groups.reduce((sum, group) => sum + group.items.length, 0);
-export const allItems = groups.flatMap(group => group.items.map(item => ({ ...item, groupId: group.id, groupTitle: group.title })));
+export const allItems = groups.flatMap(group => group.items.map(item => ({ ...item, groupId: group.id, groupTitle: group.title, groupOrigin: group.origin })));
