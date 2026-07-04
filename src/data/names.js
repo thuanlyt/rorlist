@@ -216,18 +216,6 @@ export const groups = [
     "origin": "Hy Lạp",
     "items": [
       {
-        "id": "olympus-zeus",
-        "name": "Zeus",
-        "desc": "vua của các vị thần",
-        "origin": "Hy Lạp"
-      },
-      {
-        "id": "olympus-poseidon",
-        "name": "Poseidon",
-        "desc": "thần biển cả và bão tố",
-        "origin": "Hy Lạp"
-      },
-      {
         "id": "olympus-hera",
         "name": "Hera",
         "desc": "nữ hoàng của các vị thần",
@@ -237,12 +225,6 @@ export const groups = [
         "id": "olympus-athena",
         "name": "Athena",
         "desc": "nữ thần trí tuệ và chiến thuật",
-        "origin": "Hy Lạp"
-      },
-      {
-        "id": "olympus-apollo",
-        "name": "Apollo",
-        "desc": "thần ánh sáng, âm nhạc và tiên tri",
         "origin": "Hy Lạp"
       },
       {
@@ -325,12 +307,6 @@ export const groups = [
     "subtitle": "Các vị thần, linh hồn và kẻ canh giữ liên quan đến cái chết và âm phủ.",
     "origin": "Hy Lạp",
     "items": [
-      {
-        "id": "underworld-hades",
-        "name": "Hades",
-        "desc": "thần cai quản cõi âm",
-        "origin": "Hy Lạp"
-      },
       {
         "id": "underworld-persephone",
         "name": "Persephone",
@@ -860,12 +836,6 @@ export const groups = [
         "origin": "Hy Lạp"
       },
       {
-        "id": "heroes-heracles",
-        "name": "Heracles",
-        "desc": "anh hùng sức mạnh vô song",
-        "origin": "Hy Lạp"
-      },
-      {
         "id": "heroes-odysseus",
         "name": "Odysseus",
         "desc": "anh hùng mưu trí của Hy Lạp",
@@ -875,12 +845,6 @@ export const groups = [
         "id": "heroes-ajax",
         "name": "Ajax",
         "desc": "chiến binh khổng lồ trong chiến tranh Troy",
-        "origin": "Hy Lạp"
-      },
-      {
-        "id": "heroes-leonidas",
-        "name": "Leonidas",
-        "desc": "vua chiến binh Sparta",
         "origin": "Hy Lạp"
       },
       {
@@ -1234,24 +1198,6 @@ export const groups = [
     "origin": "Bắc Âu",
     "items": [
       {
-        "id": "norse-gods-odin",
-        "name": "Odin",
-        "desc": "thần tối cao của Bắc Âu",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "norse-gods-thor",
-        "name": "Thor",
-        "desc": "thần sấm cầm búa Mjolnir",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "norse-gods-loki",
-        "name": "Loki",
-        "desc": "thần lừa lọc và biến hóa",
-        "origin": "Bắc Âu"
-      },
-      {
         "id": "norse-gods-freya",
         "name": "Freya",
         "desc": "nữ thần tình yêu, chiến tranh và ma thuật",
@@ -1460,12 +1406,6 @@ export const groups = [
         "origin": "Bắc Âu"
       },
       {
-        "id": "norse-creatures-sleipnir",
-        "name": "Sleipnir",
-        "desc": "ngựa tám chân của Odin",
-        "origin": "Bắc Âu"
-      },
-      {
         "id": "norse-creatures-nidhogg",
         "name": "Nidhogg",
         "desc": "rồng gặm rễ cây thế giới Yggdrasil",
@@ -1494,18 +1434,6 @@ export const groups = [
         "name": "Skoll",
         "desc": "sói đuổi theo mặt trời",
         "origin": "Bắc Âu"
-      },
-      {
-        "id": "norse-creatures-huginn",
-        "name": "Huginn",
-        "desc": "quạ suy nghĩ của Odin",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "norse-creatures-muninn",
-        "name": "Muninn",
-        "desc": "quạ ký ức của Odin",
-        "origin": "Bắc Âu"
       }
     ]
   },
@@ -1515,42 +1443,6 @@ export const groups = [
     "subtitle": "Các chiến nữ lựa chọn linh hồn chiến binh để đưa về Valhalla.",
     "origin": "Bắc Âu",
     "items": [
-      {
-        "id": "valkyries-brunhilde",
-        "name": "Brunhilde",
-        "desc": "Valkyrie nổi bật với ý chí phản kháng",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "valkyries-goll",
-        "name": "Goll",
-        "desc": "Valkyrie trẻ nhất trong nhóm chiến nữ",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "valkyries-randgriz",
-        "name": "Randgriz",
-        "desc": "Valkyrie mang nghĩa người phá khiên",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "valkyries-reginleif",
-        "name": "Reginleif",
-        "desc": "Valkyrie mang di sản của thần linh",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "valkyries-hrist",
-        "name": "Hrist",
-        "desc": "Valkyrie khiến kẻ thù run rẩy",
-        "origin": "Bắc Âu"
-      },
-      {
-        "id": "valkyries-gondul",
-        "name": "Gondul",
-        "desc": "Valkyrie dùng ma thuật trong chiến trận",
-        "origin": "Bắc Âu"
-      },
       {
         "id": "valkyries-skuld",
         "name": "Skuld",
@@ -1593,12 +1485,6 @@ export const groups = [
         "id": "outside-azazel",
         "name": "Azazel",
         "desc": "thiên thần sa ngã bị nguyền rủa",
-        "origin": "Ngoại hệ"
-      },
-      {
-        "id": "outside-beelzebub",
-        "name": "Beelzebub",
-        "desc": "quỷ vương của ruồi và ô uế",
         "origin": "Ngoại hệ"
       },
       {
@@ -1684,7 +1570,7 @@ export const groups = [
       {
         "id": "ror-einherjar-buddha",
         "name": "Buddha",
-        "desc": "đấng giác ngộ phản thần bảo vệ nhân loại",
+        "desc": "đấng giác ngộ phản thần bảo vệ nhân loại, bổ sung: đấng giác ngộ đứng về phía nhân loại",
         "origin": "RoR Canon"
       },
       {
@@ -1702,7 +1588,7 @@ export const groups = [
       {
         "id": "ror-einherjar-leonidas",
         "name": "Leonidas",
-        "desc": "vua chiến binh Sparta đại diện cho ý chí chiến đấu",
+        "desc": "vua chiến binh Sparta đại diện cho ý chí chiến đấu, bổ sung: vua chiến binh Sparta",
         "origin": "RoR Canon"
       },
       {
@@ -1746,31 +1632,31 @@ export const groups = [
       {
         "id": "ror-gods-fighters-thor",
         "name": "Thor",
-        "desc": "thần sấm Bắc Âu, chiến binh mở màn của phe thần",
+        "desc": "thần sấm Bắc Âu, chiến binh mở màn của phe thần, bổ sung: thần sấm cầm búa Mjolnir",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-zeus",
         "name": "Zeus",
-        "desc": "chủ tể Olympus và một trong các đấu sĩ mạnh nhất",
+        "desc": "chủ tể Olympus và một trong các đấu sĩ mạnh nhất, bổ sung: vua của các vị thần",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-poseidon",
         "name": "Poseidon",
-        "desc": "thần biển cả với phong thái cao ngạo tuyệt đối",
+        "desc": "thần biển cả với phong thái cao ngạo tuyệt đối, bổ sung: thần biển cả và bão tố",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-heracles",
         "name": "Heracles",
-        "desc": "anh hùng thần thánh mang lý tưởng công lý",
+        "desc": "anh hùng thần thánh mang lý tưởng công lý, bổ sung: anh hùng sức mạnh vô song",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-shiva",
         "name": "Shiva",
-        "desc": "thần hủy diệt Ấn Độ với điệu vũ chiến thần",
+        "desc": "thần hủy diệt Ấn Độ với điệu vũ chiến thần, bổ sung: thần hủy diệt và tái sinh",
         "origin": "RoR Canon"
       },
       {
@@ -1782,55 +1668,55 @@ export const groups = [
       {
         "id": "ror-gods-fighters-zerofuku",
         "name": "Zerofuku",
-        "desc": "thần bất hạnh tích tụ oán niệm",
+        "desc": "thần bất hạnh tích tụ oán niệm, bổ sung: thần bất hạnh bị vặn xoắn bởi đau khổ",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-hajun",
         "name": "Hajun",
-        "desc": "ma thần hủy diệt bùng phát từ cơ thể Zerofuku",
+        "desc": "ma thần hủy diệt bùng phát từ cơ thể Zerofuku, bổ sung: ma thần hủy diệt từ vực sâu",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-hades",
         "name": "Hades",
-        "desc": "vua cõi âm và niềm kiêu hãnh của Hy Lạp",
+        "desc": "vua cõi âm và niềm kiêu hãnh của Hy Lạp, bổ sung: thần cai quản cõi âm",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-beelzebub",
         "name": "Beelzebub",
-        "desc": "chúa ruồi thiên tài với sức mạnh hủy diệt",
+        "desc": "chúa ruồi thiên tài với sức mạnh hủy diệt, bổ sung: quỷ vương của ruồi và ô uế",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-apollo",
         "name": "Apollo",
-        "desc": "thần ánh sáng rực rỡ và kiêu hùng",
+        "desc": "thần ánh sáng rực rỡ và kiêu hùng, bổ sung: thần ánh sáng, âm nhạc và tiên tri",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-susano-o-no-mikoto",
         "name": "Susano'o no Mikoto",
-        "desc": "thần bão tố Nhật Bản với phong thái kiếm khách",
+        "desc": "thần bão tố Nhật Bản với phong thái kiếm khách, bổ sung: thần bão tố và chiến đấu của Nhật Bản",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-loki",
         "name": "Loki",
-        "desc": "thần lừa lọc Bắc Âu luôn ẩn chứa âm mưu",
+        "desc": "thần lừa lọc Bắc Âu luôn ẩn chứa âm mưu, bổ sung: thần lừa lọc và biến hóa",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-odin",
         "name": "Odin",
-        "desc": "thần tối cao Bắc Âu quan sát Ragnarok",
+        "desc": "thần tối cao Bắc Âu quan sát Ragnarok, bổ sung: thần tối cao của Bắc Âu",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-gods-fighters-anubis",
         "name": "Anubis",
-        "desc": "thần âm phủ Ai Cập đầy bí ẩn",
+        "desc": "thần âm phủ Ai Cập đầy bí ẩn, bổ sung: thần ướp xác và dẫn đường linh hồn",
         "origin": "RoR Canon"
       }
     ]
@@ -1844,31 +1730,31 @@ export const groups = [
       {
         "id": "ror-valkyries-brunhilde",
         "name": "Brunhilde",
-        "desc": "trưởng nữ Valkyrie và người khởi xướng Ragnarok",
+        "desc": "trưởng nữ Valkyrie và người khởi xướng Ragnarok, bổ sung: Valkyrie nổi bật với ý chí phản kháng",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-valkyries-goll",
         "name": "Goll",
-        "desc": "em út Valkyrie với trái tim trong sáng",
+        "desc": "em út Valkyrie với trái tim trong sáng, bổ sung: Valkyrie trẻ nhất trong nhóm chiến nữ",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-valkyries-randgriz",
         "name": "Randgriz",
-        "desc": "Valkyrie đồng hành cùng Lu Bu",
+        "desc": "Valkyrie đồng hành cùng Lu Bu, bổ sung: Valkyrie mang nghĩa người phá khiên",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-valkyries-reginleif",
         "name": "Reginleif",
-        "desc": "Valkyrie hợp nhất cùng Adam",
+        "desc": "Valkyrie hợp nhất cùng Adam, bổ sung: Valkyrie mang di sản của thần linh",
         "origin": "RoR Canon"
       },
       {
         "id": "ror-valkyries-hrist",
         "name": "Hrist",
-        "desc": "Valkyrie song tính đồng hành Kojiro Sasaki",
+        "desc": "Valkyrie song tính đồng hành Kojiro Sasaki, bổ sung: Valkyrie khiến kẻ thù run rẩy",
         "origin": "RoR Canon"
       },
       {
@@ -1892,7 +1778,7 @@ export const groups = [
       {
         "id": "ror-valkyries-gondul",
         "name": "Gondul",
-        "desc": "Valkyrie hỗ trợ Nikola Tesla",
+        "desc": "Valkyrie hỗ trợ Nikola Tesla, bổ sung: Valkyrie dùng ma thuật trong chiến trận",
         "origin": "RoR Canon"
       },
       {
@@ -1927,12 +1813,6 @@ export const groups = [
     "subtitle": "Những vị thần Ấn Độ nổi bật, vừa hợp thần thoại rộng hơn vừa gắn chặt với vibe Record of Ragnarok.",
     "origin": "Ấn Độ",
     "items": [
-      {
-        "id": "hindu-shiva",
-        "name": "Shiva",
-        "desc": "thần hủy diệt và tái sinh",
-        "origin": "Ấn Độ"
-      },
       {
         "id": "hindu-rudra",
         "name": "Rudra",
@@ -1996,12 +1876,6 @@ export const groups = [
     "origin": "Nhật Bản",
     "items": [
       {
-        "id": "japanese-susano-o-no-mikoto",
-        "name": "Susano'o no Mikoto",
-        "desc": "thần bão tố và chiến đấu của Nhật Bản",
-        "origin": "Nhật Bản"
-      },
-      {
         "id": "japanese-amaterasu",
         "name": "Amaterasu",
         "desc": "nữ thần mặt trời tối cao",
@@ -2052,27 +1926,9 @@ export const groups = [
     "origin": "Hỗn hợp",
     "items": [
       {
-        "id": "buddhist-buddha",
-        "name": "Buddha",
-        "desc": "đấng giác ngộ đứng về phía nhân loại",
-        "origin": "Hỗn hợp"
-      },
-      {
         "id": "buddhist-enma",
         "name": "Enma",
         "desc": "vua phán xét cõi âm phương Đông",
-        "origin": "Hỗn hợp"
-      },
-      {
-        "id": "buddhist-zerofuku",
-        "name": "Zerofuku",
-        "desc": "thần bất hạnh bị vặn xoắn bởi đau khổ",
-        "origin": "Hỗn hợp"
-      },
-      {
-        "id": "buddhist-hajun",
-        "name": "Hajun",
-        "desc": "ma thần hủy diệt từ vực sâu",
         "origin": "Hỗn hợp"
       }
     ]
@@ -2083,12 +1939,6 @@ export const groups = [
     "subtitle": "Pantheon Ai Cập mang sắc thái cổ đại, quyền uy, âm phủ và mặt trời.",
     "origin": "Ai Cập",
     "items": [
-      {
-        "id": "egyptian-anubis",
-        "name": "Anubis",
-        "desc": "thần ướp xác và dẫn đường linh hồn",
-        "origin": "Ai Cập"
-      },
       {
         "id": "egyptian-ra",
         "name": "Ra",
@@ -2206,7 +2056,7 @@ export const groups = [
       {
         "id": "divine-beasts-huginn",
         "name": "Huginn",
-        "desc": "quạ tư tưởng của Odin",
+        "desc": "quạ tư tưởng của Odin, bổ sung: quạ suy nghĩ của Odin",
         "origin": "Hỗn hợp"
       },
       {

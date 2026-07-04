@@ -38,6 +38,18 @@ const FALLBACK_SETTINGS = {
   effect_intensity: 0.82,
 };
 
+const ELEMENT_OPTIONS = [
+  { value: '', label: 'Giữ mặc định' },
+  { value: 'Mộc', label: 'Mộc' },
+  { value: 'Hỏa', label: 'Hỏa' },
+  { value: 'Thổ', label: 'Thổ' },
+  { value: 'Kim', label: 'Kim' },
+  { value: 'Thủy', label: 'Thủy' },
+  { value: 'Âm', label: 'Âm' },
+  { value: 'Dương', label: 'Dương' },
+  { value: 'Tùy chỉnh', label: 'Tùy chỉnh' },
+];
+
 const FENG_COLORS = {
   thuy: '#0284c7',
   hoa: '#dc2626',
@@ -45,6 +57,7 @@ const FENG_COLORS = {
   kim: '#b45309',
   tho: '#d97706',
   am: '#7c3aed',
+  duong: '#ca8a04',
 };
 
 const FAMOUS_NAMES = {
@@ -139,10 +152,13 @@ function makeDisplayName(name) {
   return `${PREFIX} ${name}`;
 }
 
+function isValidHex(value) {
+  return /^#[0-9a-fA-F]{6}$/.test(value || '');
+}
+
 function hexToRgb(hex) {
-  const clean = hex.replace('#', '').trim();
-  const full = clean.length === 3 ? clean.split('').map((ch) => ch + ch).join('') : clean;
-  const value = Number.parseInt(full, 16);
+  const clean = (isValidHex(hex) ? hex : '#2dd4bf').replace('#', '').trim();
+  const value = Number.parseInt(clean, 16);
   return `${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}`;
 }
 
@@ -153,6 +169,22 @@ function shortOwner(name) {
 
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+function getDefaultStyle(item) {
+  return FAMOUS_NAMES[item.name] || null;
+}
+
+function getVisualStyle(item, styles) {
+  const custom = styles[item.id];
+  if (custom?.custom_color && custom?.custom_element) {
+    return {
+      element: custom.custom_element,
+      color: custom.custom_color,
+      custom: true,
+    };
+  }
+  return getDefaultStyle(item);
 }
 
 async function copyToClipboard(text) {
@@ -263,6 +295,7 @@ function App() {
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [claims, setClaims] = useState({});
+  const [nameStyles, setNameStyles] = useState({});
   const [settings, setSettings] = useState(FALLBACK_SETTINGS);
   const [admin, setAdmin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -281,21 +314,19 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    const intensity = Number(settings.effect_intensity || FALLBACK_SETTINGS.effect_intensity);
     document.documentElement.style.setProperty('--effect-duration', `${settings.effect_duration}s`);
-    document.documentElement.style.setProperty('--effect-intensity', String(intensity));
-    document.documentElement.style.setProperty('--effect-alpha', String(Math.min(1, Math.max(0.28, intensity))));
-    document.documentElement.style.setProperty('--effect-alpha-soft', String(Math.min(0.7, Math.max(0.14, intensity * 0.55))));
-    document.documentElement.style.setProperty('--effect-alpha-faint', String(Math.min(0.36, Math.max(0.08, intensity * 0.25))));
-    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.9, intensity * 1.6)));
+    document.documentElement.style.setProperty('--effect-intensity', String(settings.effect_intensity));
+    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.75, settings.effect_intensity * 1.35)));
   }, [settings]);
 
-  const loadLocalData = () => {
+  function loadLocalData() {
     const localClaims = JSON.parse(localStorage.getItem('ror-local-claims') || '{}');
     const localSettings = JSON.parse(localStorage.getItem('ror-local-settings') || 'null');
+    const localStyles = JSON.parse(localStorage.getItem('ror-local-name-styles') || '{}');
     setClaims(localClaims);
+    setNameStyles(localStyles);
     if (localSettings) setSettings(localSettings);
-  };
+  }
 
   async function fetchClaims() {
     if (!supabase) {
@@ -308,9 +339,22 @@ function App() {
       setToast(`Không đọc được Supabase: ${error.message}`);
       return;
     }
-    const nextClaims = Object.fromEntries((data || []).map((claim) => [claim.name_id, claim]));
-    setClaims(nextClaims);
+    setClaims(Object.fromEntries((data || []).map((claim) => [claim.name_id, claim])));
     setSyncStatus('online');
+  }
+
+  async function fetchNameStyles() {
+    if (!supabase) {
+      loadLocalData();
+      return;
+    }
+    const { data, error } = await supabase.from('ror_name_styles').select('*');
+    if (error) {
+      setSyncStatus('error');
+      setToast(`Không đọc được màu/mệnh: ${error.message}`);
+      return;
+    }
+    setNameStyles(Object.fromEntries((data || []).map((style) => [style.name_id, style])));
   }
 
   async function fetchSettings() {
@@ -318,7 +362,7 @@ function App() {
     const { data, error } = await supabase.from('ror_ui_settings').select('*').eq('id', 'global').maybeSingle();
     if (error) {
       setSyncStatus('error');
-      setToast(`Không đọc được cấu hình hiệu ứng: ${error.message}`);
+      setToast(`Không đọc được hiệu ứng: ${error.message}`);
       return;
     }
     if (data) {
@@ -340,7 +384,7 @@ function App() {
 
     async function boot() {
       setSyncStatus('connecting');
-      await Promise.all([fetchClaims(), fetchSettings()]);
+      await Promise.all([fetchClaims(), fetchNameStyles(), fetchSettings()]);
       if (mounted) setSyncStatus('online');
     }
 
@@ -349,6 +393,7 @@ function App() {
     const channel = supabase
       .channel('ror-name-registry-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ror_name_claims' }, () => fetchClaims())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ror_name_styles' }, () => fetchNameStyles())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ror_ui_settings' }, () => fetchSettings())
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') setSyncStatus('online');
@@ -367,7 +412,7 @@ function App() {
   }, [toast]);
 
   const groupOptions = useMemo(() => [
-    { value: 'all', label: `Tất cả nhóm`, count: groups.length },
+    { value: 'all', label: 'Tất cả nhóm', count: groups.length },
     ...groups.map((group) => ({ value: group.id, label: group.title, count: group.items.length })),
   ], []);
 
@@ -384,19 +429,20 @@ function App() {
       .map((group) => {
         const items = group.items.filter((item) => {
           const claim = claims[item.id];
+          const style = nameStyles[item.id];
           const used = Boolean(claim?.owner_name);
           const statusOk = statusFilter === 'all' || (statusFilter === 'used' ? used : !used);
-          const haystack = `${item.name} ${item.desc} ${item.origin} ${group.title} ${claim?.owner_name || ''} ${claim?.identity_text || ''} ${claim?.note || ''}`.toLowerCase();
+          const haystack = `${item.name} ${item.desc} ${item.origin} ${group.title} ${claim?.owner_name || ''} ${claim?.identity_text || ''} ${claim?.note || ''} ${style?.custom_element || ''} ${style?.custom_color || ''}`.toLowerCase();
           return statusOk && (!normalized || haystack.includes(normalized));
         });
         return { ...group, items };
       })
       .filter((group) => group.items.length > 0);
-  }, [claims, query, selectedGroup, statusFilter]);
+  }, [claims, nameStyles, query, selectedGroup, statusFilter]);
 
   const visibleCount = filteredGroups.reduce((sum, group) => sum + group.items.length, 0);
   const usedCount = Object.keys(claims).length;
-  const famousCount = allItems.filter((item) => FAMOUS_NAMES[item.name]).length;
+  const styledCount = allItems.filter((item) => getVisualStyle(item, nameStyles)).length;
 
   function openModal(nextModal) {
     window.clearTimeout(closeTimerRef.current);
@@ -410,7 +456,7 @@ function App() {
     closeTimerRef.current = window.setTimeout(() => {
       setModal(null);
       setModalClosing(false);
-    }, 340);
+    }, 260);
   }
 
   async function verifyAdmin(password) {
@@ -444,36 +490,94 @@ function App() {
     }
   }
 
-  async function saveClaim(item, payload) {
-    setBusy(true);
-    try {
-      if (!supabase) {
-        const nextClaim = {
+  async function upsertStyle(item, stylePayload) {
+    const customColor = stylePayload?.custom_color;
+    const customElement = stylePayload?.custom_element;
+    const shouldSave = Boolean(customColor && customElement && isValidHex(customColor));
+
+    if (!supabase) {
+      const nextStyles = { ...nameStyles };
+      if (shouldSave) {
+        nextStyles[item.id] = {
           name_id: item.id,
           display_name: makeDisplayName(item.name),
           group_title: item.groupTitle,
-          owner_name: payload.owner_name,
-          identity_text: payload.identity_text,
-          note: payload.note,
+          custom_element: customElement,
+          custom_color: customColor,
           updated_at: new Date().toISOString(),
         };
-        const nextClaims = { ...claims, [item.id]: nextClaim };
+      } else {
+        delete nextStyles[item.id];
+      }
+      setNameStyles(nextStyles);
+      localStorage.setItem('ror-local-name-styles', JSON.stringify(nextStyles));
+      return;
+    }
+
+    if (shouldSave) {
+      const { error } = await supabase.rpc('ror_upsert_name_style', {
+        p_admin_password: adminPassword,
+        p_name_id: item.id,
+        p_display_name: makeDisplayName(item.name),
+        p_group_title: item.groupTitle,
+        p_custom_element: customElement,
+        p_custom_color: customColor,
+      });
+      if (error) throw error;
+    } else if (nameStyles[item.id]) {
+      const { error } = await supabase.rpc('ror_delete_name_style', {
+        p_admin_password: adminPassword,
+        p_name_id: item.id,
+      });
+      if (error) throw error;
+    }
+    await fetchNameStyles();
+  }
+
+  async function saveNameAdmin(item, claimPayload, stylePayload) {
+    setBusy(true);
+    try {
+      const owner = claimPayload.owner_name.trim();
+      if (!supabase) {
+        const nextClaims = { ...claims };
+        if (owner) {
+          nextClaims[item.id] = {
+            name_id: item.id,
+            display_name: makeDisplayName(item.name),
+            group_title: item.groupTitle,
+            owner_name: owner,
+            identity_text: claimPayload.identity_text.trim(),
+            note: claimPayload.note.trim(),
+            updated_at: new Date().toISOString(),
+          };
+        } else {
+          delete nextClaims[item.id];
+        }
         setClaims(nextClaims);
         localStorage.setItem('ror-local-claims', JSON.stringify(nextClaims));
-      } else {
+      } else if (owner) {
         const { error } = await supabase.rpc('ror_upsert_name_claim', {
           p_admin_password: adminPassword,
           p_name_id: item.id,
           p_display_name: makeDisplayName(item.name),
           p_group_title: item.groupTitle,
-          p_owner_name: payload.owner_name,
-          p_identity_text: payload.identity_text,
-          p_note: payload.note,
+          p_owner_name: owner,
+          p_identity_text: claimPayload.identity_text.trim(),
+          p_note: claimPayload.note.trim(),
+        });
+        if (error) throw error;
+        await fetchClaims();
+      } else if (claims[item.id]) {
+        const { error } = await supabase.rpc('ror_delete_name_claim', {
+          p_admin_password: adminPassword,
+          p_name_id: item.id,
         });
         if (error) throw error;
         await fetchClaims();
       }
-      setToast('Đã lưu thông tin tên.');
+
+      await upsertStyle(item, stylePayload);
+      setToast('Đã lưu.');
       closeModal();
     } catch (error) {
       setToast(`Không lưu được: ${error.message}`);
@@ -498,7 +602,7 @@ function App() {
         if (error) throw error;
         await fetchClaims();
       }
-      setToast('Đã trả tên về trạng thái còn trống.');
+      setToast('Đã trả tên.');
       closeModal();
     } catch (error) {
       setToast(`Không trả tên được: ${error.message}`);
@@ -523,7 +627,7 @@ function App() {
         if (error) throw error;
         await fetchSettings();
       }
-      setToast('Đã đồng bộ hiệu ứng giao diện.');
+      setToast('Đã lưu hiệu ứng.');
       closeModal();
     } catch (error) {
       setToast(`Không lưu hiệu ứng được: ${error.message}`);
@@ -538,7 +642,7 @@ function App() {
       .map((item) => makeDisplayName(item.name))
       .join('\n');
     await copyToClipboard(text);
-    setToast('Đã copy danh sách tên còn trống.');
+    setToast('Đã copy tên trống.');
   }
 
   async function copyName(item) {
@@ -547,12 +651,13 @@ function App() {
     window.setTimeout(() => setCopied(''), 900);
   }
 
-  function exportJson() {
+  function exportData() {
     const payload = allItems.map((item) => ({
       name_id: item.id,
-      name: makeDisplayName(item.name),
-      group: item.groupTitle,
+      display_name: makeDisplayName(item.name),
+      group_title: item.groupTitle,
       status: claims[item.id] ? 'used' : 'free',
+      style: nameStyles[item.id] || null,
       claim: claims[item.id] || null,
     }));
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -564,39 +669,48 @@ function App() {
     URL.revokeObjectURL(url);
   }
 
-  function scrollToY(targetY) {
-    if (scrollFrameRef.current) cancelAnimationFrame(scrollFrameRef.current);
+  function scrollToTopAnimated() {
+    window.cancelAnimationFrame(scrollFrameRef.current);
     const root = document.documentElement;
     const indicator = document.getElementById('scrollIndicator');
     const startY = window.scrollY || document.documentElement.scrollTop || 0;
-    const distance = Math.abs(targetY - startY);
-    const duration = Math.min(1250, Math.max(460, distance * 0.65));
+    const duration = Math.min(1350, Math.max(520, startY * 0.72));
     const start = performance.now();
     root.classList.add('is-scroll-animating');
 
     function step(now) {
       const progress = Math.min((now - start) / duration, 1);
-      const eased = easeInOutCubic(progress);
-      window.scrollTo(0, Math.round(startY + (targetY - startY) * eased));
+      const y = Math.round(startY * (1 - easeInOutCubic(progress)));
+      window.scrollTo(0, y);
       if (indicator) indicator.style.width = `${Math.round(progress * 100)}%`;
       if (progress < 1) {
-        scrollFrameRef.current = requestAnimationFrame(step);
+        scrollFrameRef.current = window.requestAnimationFrame(step);
       } else {
         window.setTimeout(() => {
           root.classList.remove('is-scroll-animating');
           if (indicator) indicator.style.width = '0%';
-        }, 240);
+        }, 220);
       }
     }
-    requestAnimationFrame(step);
+    scrollFrameRef.current = window.requestAnimationFrame(step);
   }
 
-  function scrollNextGroup() {
+  function scrollToNextGroup() {
     const sections = [...document.querySelectorAll('[data-group-section]')];
-    if (!sections.length) return scrollToY(0);
-    const y = window.scrollY;
-    const next = sections.find((section) => section.offsetTop > y + 130) || sections[0];
-    return scrollToY(Math.max(0, next.offsetTop - 88));
+    if (!sections.length) return scrollToTopAnimated();
+    const currentY = window.scrollY;
+    const next = sections.find((section) => section.offsetTop > currentY + 128) || sections[0];
+    const targetY = Math.max(0, next.offsetTop - 92);
+    const startY = window.scrollY;
+    const distance = targetY - startY;
+    const duration = Math.min(1200, Math.max(520, Math.abs(distance) * 0.7));
+    const start = performance.now();
+    function step(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      window.scrollTo(0, Math.round(startY + distance * easeInOutCubic(progress)));
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
 
   function cycleLayout() {
@@ -604,51 +718,50 @@ function App() {
     setLayout(layoutModes[(index + 1) % layoutModes.length]);
   }
 
-  function toggleTheme() {
-    const root = document.documentElement;
-    root.classList.add('theme-switching');
-    setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
-    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+  function layoutIcon() {
+    if (layout === 'list') return <List size={18} />;
+    if (layout === 'compact') return <PanelTop size={18} />;
+    return <LayoutGrid size={18} />;
   }
 
-  const syncLabel = syncStatus === 'online' ? 'Supabase online' : syncStatus === 'connecting' ? 'Đang kết nối' : syncStatus === 'error' ? 'Lỗi đồng bộ' : 'Local mode';
+  const syncClass = `sync-${syncStatus}`;
+  const syncText = syncStatus === 'online' ? 'Supabase online' : syncStatus === 'connecting' ? 'Đang đồng bộ' : syncStatus === 'local' ? 'Local mode' : 'Supabase lỗi';
 
   return (
     <>
       <div className="scroll-to-top-indicator" id="scrollIndicator" aria-hidden="true" />
       <main className={`app layout-${layout}`}>
-        <header className="topbar">
-          <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); scrollToY(0); }}>
+        <header className="topbar" id="top">
+          <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); scrollToTopAnimated(); }}>
             <span className="brand-mark">RoR</span>
             <span className="brand-text">Record of Ragnarok</span>
           </a>
           <div className="top-actions">
-            <button className={`ghost-button ${admin ? 'is-active' : ''}`} type="button" onClick={() => (admin ? (setAdmin(false), setAdminPassword(''), setToast('Đã tắt Admin.')) : openModal({ type: 'login' }))}>
-              <ShieldCheck size={18} />
-              <span>{admin ? 'Admin On' : 'Admin'}</span>
+            <button className={`soft-button ${admin ? 'is-active' : ''}`} type="button" onClick={() => (admin ? setAdmin(false) : openModal({ type: 'login' }))}>
+              <ShieldCheck size={18} /> Admin
             </button>
             {admin && (
-              <button className="ghost-button" type="button" onClick={() => openModal({ type: 'effect' })}>
-                <SlidersHorizontal size={18} />
-                <span>Effect</span>
+              <button className="soft-button" type="button" onClick={() => openModal({ type: 'effect' })}>
+                <SlidersHorizontal size={18} /> Effect
               </button>
             )}
-            <button className="ghost-button" type="button" onClick={exportJson}>
-              <Download size={18} />
-              <span>Export</span>
+            <button className="soft-button" type="button" onClick={exportData}>
+              <Download size={18} /> Export
             </button>
           </div>
         </header>
 
-        <section className="hero-panel" id="top">
+        <section className="hero-panel">
           <div className="eyebrow"><Sparkles size={16} /> Name Registry</div>
           <h1>Record of Ragnarok Name Archive</h1>
+          <p>Bộ sưu tập tên thần thoại, nhân vật huyền thoại và tên hội phong cách Ragnarok.</p>
           <div className="stats">
             <span className="pill"><strong>{groups.length}</strong> nhóm</span>
             <span className="pill"><strong>{totalNames}</strong> tên</span>
             <span className="pill"><strong>{usedCount}</strong> đã dùng</span>
             <span className="pill"><strong>{totalNames - usedCount}</strong> còn trống</span>
-            <span className={`pill sync-pill sync-${syncStatus}`}><strong>{syncLabel}</strong></span>
+            <span className="pill"><strong>{styledCount}</strong> nổi bật</span>
+            <span className={`pill ${syncClass}`}><strong>{syncText}</strong></span>
             <span className="pill"><strong>{settings.effect_type}</strong> effect</span>
           </div>
         </section>
@@ -657,43 +770,30 @@ function App() {
           <label className="search-box">
             <Search size={18} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} type="search" placeholder="Tìm tên, người dùng, ghi chú..." />
-            {query && (
-              <button className="clear-button" type="button" onClick={() => setQuery('')} aria-label="Xóa tìm kiếm">
-                <X size={16} />
-              </button>
-            )}
+            {query && <button className="clear-button" type="button" onClick={() => setQuery('')} aria-label="Xóa tìm kiếm"><X size={16} /></button>}
           </label>
           <SelectBox icon={Check} label="Trạng thái" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
           <SelectBox icon={Filter} label="Nhóm" options={groupOptions} value={selectedGroup} onChange={setSelectedGroup} />
-          <button className="soft-button" type="button" onClick={copyAvailableNames}>
-            <Copy size={18} />
-            <span>Copy tên trống</span>
+          <button className="soft-button primary copy-available" type="button" onClick={copyAvailableNames}>
+            <Copy size={17} /> Copy tên trống
           </button>
         </section>
 
         <section className="summary-row">
           <div className="summary-left">
             <span className="pill">Đang hiển thị <strong>{visibleCount}</strong> / {totalNames}</span>
-            <span className="pill">Nổi bật <strong>{famousCount}</strong></span>
             <span className="pill">Admin <strong>{admin ? 'Bật' : 'Tắt'}</strong></span>
           </div>
           <button className="ghost-button" type="button" onClick={() => { setQuery(''); setSelectedGroup('all'); setStatusFilter('all'); }}>
-            <RotateCcw size={17} />
-            <span>Xóa lọc</span>
+            <RotateCcw size={17} /> Xóa lọc
           </button>
         </section>
 
         <section className="groups">
-          {filteredGroups.length === 0 ? (
-            <div className="empty-state">
-              <h2>Không tìm thấy tên phù hợp</h2>
-              <p>Thử đổi từ khóa hoặc bộ lọc.</p>
-              <button type="button" onClick={() => { setQuery(''); setSelectedGroup('all'); setStatusFilter('all'); }}>Xóa lọc</button>
-            </div>
-          ) : filteredGroups.map((group) => (
-            <article className="group" data-group-section key={group.id}>
+          {filteredGroups.map((group) => (
+            <article className="group" key={group.id} data-group-section>
               <header className="group-header">
-                <span className="origin">{group.origin} · {group.items.length} tên</span>
+                <span className="pill origin-pill">{group.origin} · {group.items.length} tên</span>
                 <h2>{group.title}</h2>
               </header>
               <div className="cards">
@@ -709,45 +809,63 @@ function App() {
                     onOpenClaim={() => openModal({ type: 'claim', item: { ...item, groupTitle: group.title } })}
                     onOpenDetails={() => openModal({ type: 'details', item: { ...item, groupTitle: group.title } })}
                     settings={settings}
+                    styleOverride={nameStyles[item.id]}
                   />
                 ))}
               </div>
             </article>
           ))}
+          {!filteredGroups.length && (
+            <div className="empty-state">
+              <h2>Không tìm thấy tên</h2>
+              <button type="button" onClick={() => { setQuery(''); setSelectedGroup('all'); setStatusFilter('all'); }}>Xóa lọc</button>
+            </div>
+          )}
         </section>
 
         <div className="floating-tools">
-          <button type="button" onClick={cycleLayout} aria-label="Đổi bố cục">
-            {layout === 'grid' ? <LayoutGrid size={18} /> : layout === 'compact' ? <PanelTop size={18} /> : <List size={18} />}
-            <span>{layout === 'grid' ? 'Grid' : layout === 'compact' ? 'Compact' : 'List'}</span>
-          </button>
-          <button type="button" onClick={toggleTheme} aria-label="Đổi giao diện sáng tối">
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
-          </button>
-          {admin && (
-            <button type="button" onClick={() => openModal({ type: 'effect' })} aria-label="Tùy chỉnh hiệu ứng">
-              <Sparkles size={18} />
-              <span>Effect</span>
-            </button>
-          )}
-          <button type="button" onClick={scrollNextGroup} aria-label="Nhóm kế tiếp">
-            <ArrowDown size={18} />
-            <span>Next</span>
-          </button>
-          <button type="button" onClick={() => scrollToY(0)} aria-label="Lên đầu trang">
-            <ArrowUp size={18} />
-            <span>Top</span>
-          </button>
+          <button type="button" onClick={cycleLayout}>{layoutIcon()} <span>{layout === 'grid' ? 'Grid' : layout === 'compact' ? 'Compact' : 'List'}</span></button>
+          <button type="button" onClick={() => {
+            document.documentElement.classList.add('theme-switching');
+            setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
+            requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('theme-switching')));
+          }}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />} <span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button>
+          {admin && <button type="button" onClick={() => openModal({ type: 'effect' })}><SlidersHorizontal size={18} /> <span>Effect</span></button>}
+          <button type="button" onClick={scrollToNextGroup}><ArrowDown size={18} /> <span>Next</span></button>
+          <button type="button" onClick={scrollToTopAnimated}><ArrowUp size={18} /> <span>Top</span></button>
         </div>
       </main>
 
       {toast && <div className="toast">{toast}</div>}
+
       {modal && (
         <ModalShell closing={modalClosing} onClose={closeModal}>
           {modal.type === 'login' && <LoginModal busy={busy} onClose={closeModal} onSubmit={handleAdminLogin} />}
-          {modal.type === 'claim' && <ClaimModal busy={busy} claim={claims[modal.item.id]} item={modal.item} onClose={closeModal} onRelease={() => releaseClaim(modal.item.id)} onSave={saveClaim} />}
-          {modal.type === 'details' && <DetailsModal admin={admin} busy={busy} claim={claims[modal.item.id]} item={modal.item} onClose={closeModal} onEdit={() => openModal({ type: 'claim', item: modal.item })} onRelease={() => releaseClaim(modal.item.id)} />}
+          {modal.type === 'claim' && (
+            <ClaimModal
+              busy={busy}
+              claim={claims[modal.item.id]}
+              defaultStyle={getDefaultStyle(modal.item)}
+              item={modal.item}
+              onClose={closeModal}
+              onRelease={() => releaseClaim(modal.item.id)}
+              onSave={saveNameAdmin}
+              styleOverride={nameStyles[modal.item.id]}
+            />
+          )}
+          {modal.type === 'details' && (
+            <DetailsModal
+              admin={admin}
+              busy={busy}
+              claim={claims[modal.item.id]}
+              item={modal.item}
+              onClose={closeModal}
+              onEdit={() => openModal({ type: 'claim', item: modal.item })}
+              onRelease={() => releaseClaim(modal.item.id)}
+              visualStyle={getVisualStyle(modal.item, nameStyles)}
+              styleOverride={nameStyles[modal.item.id]}
+            />
+          )}
           {modal.type === 'effect' && <EffectModal busy={busy} settings={settings} onClose={closeModal} onSave={saveEffectSettings} />}
         </ModalShell>
       )}
@@ -755,11 +873,13 @@ function App() {
   );
 }
 
-function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOpenDetails, settings }) {
-  const famous = FAMOUS_NAMES[item.name];
-  const rgb = famous ? hexToRgb(famous.color) : '45, 212, 191';
+function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOpenDetails, settings, styleOverride }) {
+  const visualStyle = styleOverride?.custom_color && styleOverride?.custom_element
+    ? { element: styleOverride.custom_element, color: styleOverride.custom_color, custom: true }
+    : FAMOUS_NAMES[item.name];
+  const rgb = visualStyle ? hexToRgb(visualStyle.color) : '45, 212, 191';
   const used = Boolean(claim?.owner_name);
-  const effectClass = famous && settings.effect_type !== 'static' ? `effect-${settings.effect_type}` : '';
+  const effectClass = visualStyle && settings.effect_type !== 'static' ? `effect-${settings.effect_type}` : '';
 
   function onCardClick() {
     if (used) onOpenDetails();
@@ -768,15 +888,16 @@ function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOp
 
   return (
     <article
-      className={`name-card lazy-card is-visible ${famous ? 'is-famous' : ''} ${effectClass} ${used ? 'is-used' : ''}`}
+      className={`name-card lazy-card is-visible ${visualStyle ? 'is-famous' : ''} ${effectClass} ${used ? 'is-used' : ''}`}
       onClick={onCardClick}
-      style={{ '--feng': famous?.color || '#2dd4bf', '--feng-rgb': rgb, '--delay': index % 8 }}
+      style={{ '--feng': visualStyle?.color || '#2dd4bf', '--feng-rgb': rgb, '--delay': index % 8 }}
     >
-      {famous && settings.effect_type !== 'static' && <span className="effect-layer" aria-hidden="true" />}
+      {visualStyle && settings.effect_type !== 'static' && <span className="effect-layer" aria-hidden="true" />}
       <div className="name-body">
         <div className="tag-row">
-          <span className={`name-origin ${famous ? 'feng-origin' : ''}`}>{item.origin}</span>
-          {famous && <span className="name-origin feng-tag">Mệnh {famous.element}</span>}
+          <span className={`name-origin ${visualStyle ? 'feng-tag' : ''}`}>{item.origin}</span>
+          {visualStyle && <span className="name-origin feng-tag">Mệnh {visualStyle.element}</span>}
+          {styleOverride?.custom_color && <span className="name-origin custom-tag">Custom</span>}
           <span className={`name-origin ${used ? 'used-tag' : 'free-tag'}`}>{used ? 'Đã dùng' : 'Còn trống'}</span>
         </div>
         <h3>
@@ -812,7 +933,7 @@ function LoginModal({ busy, onClose, onSubmit }) {
     setError('');
     const ok = await onSubmit(password);
     if (ok) onClose();
-    else setError('Không đăng nhập được. Kiểm tra mật khẩu hoặc SQL Supabase.');
+    else setError('Không đăng nhập được.');
   }
 
   return (
@@ -836,19 +957,34 @@ function LoginModal({ busy, onClose, onSubmit }) {
   );
 }
 
-function ClaimModal({ busy, claim, item, onClose, onRelease, onSave }) {
+function ClaimModal({ busy, claim, defaultStyle, item, onClose, onRelease, onSave, styleOverride }) {
   const [owner, setOwner] = useState(claim?.owner_name || '');
   const [identity, setIdentity] = useState(claim?.identity_text || '');
   const [note, setNote] = useState(claim?.note || '');
+  const [styleMode, setStyleMode] = useState(styleOverride ? 'custom' : 'default');
+  const [element, setElement] = useState(styleOverride?.custom_element || defaultStyle?.element || '');
+  const [customElement, setCustomElement] = useState(styleOverride?.custom_element && !ELEMENT_OPTIONS.some((option) => option.value === styleOverride.custom_element) ? styleOverride.custom_element : '');
+  const [color, setColor] = useState(styleOverride?.custom_color || defaultStyle?.color || '#2dd4bf');
+  const selectedElement = element === 'Tùy chỉnh' ? customElement.trim() : element;
+  const canSave = owner.trim() || claim || styleMode === 'custom' || styleOverride;
+
+  function resetDefault() {
+    setStyleMode('default');
+    setElement(defaultStyle?.element || '');
+    setCustomElement('');
+    setColor(defaultStyle?.color || '#2dd4bf');
+  }
 
   function submit(event) {
     event.preventDefault();
-    if (!owner.trim()) return;
+    const stylePayload = styleMode === 'custom' && selectedElement && isValidHex(color)
+      ? { custom_element: selectedElement, custom_color: color }
+      : { custom_element: '', custom_color: '' };
     onSave(item, {
       owner_name: owner.trim(),
       identity_text: identity.trim(),
       note: note.trim(),
-    });
+    }, stylePayload);
   }
 
   return (
@@ -857,7 +993,7 @@ function ClaimModal({ busy, claim, item, onClose, onRelease, onSave }) {
       <div className="modal-body">
         <label className="field">
           <span>Người đang dùng tên</span>
-          <input autoFocus value={owner} onChange={(event) => setOwner(event.target.value)} placeholder="Ví dụ: Thuận Lê / tên nhân vật" />
+          <input autoFocus value={owner} onChange={(event) => setOwner(event.target.value)} placeholder="Tên người dùng / nhân vật" />
         </label>
         <label className="field">
           <span>Danh tính / liên hệ</span>
@@ -865,23 +1001,74 @@ function ClaimModal({ busy, claim, item, onClose, onRelease, onSave }) {
         </label>
         <label className="field">
           <span>Ghi chú</span>
-          <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Ví dụ: Main DPS, phó nhóm, đã đổi tên ngày..." />
+          <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Ghi chú quản trị" />
         </label>
+
+        <div className="field-grid two-columns">
+          <label className="field">
+            <span>Màu / mệnh</span>
+            <select value={styleMode} onChange={(event) => setStyleMode(event.target.value)}>
+              <option value="default">Giữ mặc định</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Mệnh</span>
+            <select value={element} disabled={styleMode === 'default'} onChange={(event) => setElement(event.target.value)}>
+              {ELEMENT_OPTIONS.filter((option) => option.value).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+        </div>
+
+        {styleMode === 'custom' && element === 'Tùy chỉnh' && (
+          <label className="field">
+            <span>Tên mệnh tùy chỉnh</span>
+            <input value={customElement} onChange={(event) => setCustomElement(event.target.value)} placeholder="Ví dụ: Lôi, Băng, Hỗn Mang..." />
+          </label>
+        )}
+
+        <div className="field-grid color-grid">
+          <label className="field">
+            <span>Màu</span>
+            <input className="color-input" type="color" value={isValidHex(color) ? color : '#2dd4bf'} disabled={styleMode === 'default'} onChange={(event) => setColor(event.target.value)} />
+          </label>
+          <label className="field">
+            <span>HEX</span>
+            <input value={color} disabled={styleMode === 'default'} onChange={(event) => setColor(event.target.value)} placeholder="#0284c7" />
+          </label>
+        </div>
+
+        <article className={`name-card preview-card ${styleMode === 'custom' ? 'is-famous effect-sweep' : defaultStyle ? 'is-famous effect-sweep' : ''}`} style={{ '--feng': styleMode === 'custom' ? color : (defaultStyle?.color || '#2dd4bf'), '--feng-rgb': hexToRgb(styleMode === 'custom' ? color : (defaultStyle?.color || '#2dd4bf')) }}>
+          <span className="effect-layer" aria-hidden="true" />
+          <div className="name-body">
+            <div className="tag-row">
+              <span className={(styleMode === 'custom' || defaultStyle) ? 'name-origin feng-tag' : 'name-origin'}>{item.origin}</span>
+              {(styleMode === 'custom' ? selectedElement : defaultStyle?.element) && <span className="name-origin feng-tag">Mệnh {styleMode === 'custom' ? selectedElement : defaultStyle.element}</span>}
+            </div>
+            <h3><span>{makeDisplayName(item.name)}</span></h3>
+            <p>{styleMode === 'custom' ? 'Custom từ database' : 'Giữ cấu hình gốc'}</p>
+          </div>
+        </article>
       </div>
       <footer className="modal-actions">
-        <button className="ghost-button danger" type="button" onClick={onRelease} disabled={busy || !claim}>
-          <Unlock size={17} /> Trả tên
-        </button>
+        <div className="modal-actions-left">
+          <button className="ghost-button danger" type="button" onClick={onRelease} disabled={busy || !claim}>
+            <Unlock size={17} /> Trả tên
+          </button>
+          <button className="ghost-button" type="button" onClick={resetDefault} disabled={busy}>
+            <RefreshCw size={17} /> Mặc định
+          </button>
+        </div>
         <div className="modal-actions-right">
           <button className="ghost-button" type="button" onClick={onClose}>Hủy</button>
-          <button className="soft-button success" type="submit" disabled={busy || !owner.trim()}>{busy ? <Loader2 className="spin" size={17} /> : <Save size={17} />} Lưu</button>
+          <button className="soft-button success" type="submit" disabled={busy || !canSave || (styleMode === 'custom' && (!selectedElement || !isValidHex(color)))}>{busy ? <Loader2 className="spin" size={17} /> : <Save size={17} />} Lưu</button>
         </div>
       </footer>
     </form>
   );
 }
 
-function DetailsModal({ admin, busy, claim, item, onClose, onEdit, onRelease }) {
+function DetailsModal({ admin, busy, claim, item, onClose, onEdit, onRelease, visualStyle, styleOverride }) {
   return (
     <>
       <ModalHeader title={makeDisplayName(item.name)} subtitle={item.desc} onClose={onClose} />
@@ -889,11 +1076,12 @@ function DetailsModal({ admin, busy, claim, item, onClose, onEdit, onRelease }) 
         <div className="detail-box"><strong>Người đang sử dụng</strong>{claim?.owner_name || 'Chưa khai báo'}</div>
         <div className="detail-box"><strong>Danh tính / liên hệ</strong>{claim?.identity_text || 'Chưa khai báo'}</div>
         <div className="detail-box"><strong>Ghi chú</strong>{claim?.note || 'Không có ghi chú'}</div>
-        <div className="detail-box"><strong>Cập nhật</strong>{claim?.updated_at ? new Date(claim.updated_at).toLocaleString('vi-VN') : 'Chưa có dữ liệu'}</div>
+        <div className="detail-box"><strong>Màu / mệnh</strong>{visualStyle ? `${visualStyle.element} · ${visualStyle.color}${styleOverride ? ' · Custom' : ''}` : 'Không có'}</div>
+        <div className="detail-box"><strong>Cập nhật</strong>{claim?.updated_at ? new Date(claim.updated_at).toLocaleString('vi-VN') : styleOverride?.updated_at ? new Date(styleOverride.updated_at).toLocaleString('vi-VN') : 'Chưa có dữ liệu'}</div>
       </div>
       <footer className="modal-actions">
         {admin ? (
-          <button className="ghost-button danger" type="button" onClick={onRelease} disabled={busy}>
+          <button className="ghost-button danger" type="button" onClick={onRelease} disabled={busy || !claim}>
             <Trash2 size={17} /> Trả tên
           </button>
         ) : <span />}
@@ -910,13 +1098,9 @@ function EffectModal({ busy, settings, onClose, onSave }) {
   const [form, setForm] = useState(settings);
 
   useEffect(() => {
-    const intensity = Number(form.effect_intensity || FALLBACK_SETTINGS.effect_intensity);
     document.documentElement.style.setProperty('--effect-duration', `${form.effect_duration}s`);
-    document.documentElement.style.setProperty('--effect-intensity', String(intensity));
-    document.documentElement.style.setProperty('--effect-alpha', String(Math.min(1, Math.max(0.28, intensity))));
-    document.documentElement.style.setProperty('--effect-alpha-soft', String(Math.min(0.7, Math.max(0.14, intensity * 0.55))));
-    document.documentElement.style.setProperty('--effect-alpha-faint', String(Math.min(0.36, Math.max(0.08, intensity * 0.25))));
-    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.9, intensity * 1.6)));
+    document.documentElement.style.setProperty('--effect-intensity', String(form.effect_intensity));
+    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.75, form.effect_intensity * 1.35)));
   }, [form]);
 
   function update(key, value) {
@@ -934,10 +1118,10 @@ function EffectModal({ busy, settings, onClose, onSave }) {
         <label className="field">
           <span>Kiểu hiệu ứng</span>
           <select value={form.effect_type} onChange={(event) => update('effect_type', event.target.value)}>
-            <option value="sweep">Sweep — vệt sáng chạy ngang card</option>
-            <option value="pulse">Pulse — viền sáng 0% → 100% → 0%</option>
-            <option value="breathe">Breathe — nền sáng nhẹ theo nhịp</option>
-            <option value="static">Static — chỉ giữ màu viền, không animation</option>
+            <option value="sweep">Sweep</option>
+            <option value="pulse">Pulse</option>
+            <option value="breathe">Breathe</option>
+            <option value="static">Static</option>
           </select>
         </label>
         <label className="field">
@@ -953,7 +1137,7 @@ function EffectModal({ busy, settings, onClose, onSave }) {
           <div className="name-body">
             <div className="tag-row"><span className="name-origin feng-tag">Preview</span></div>
             <h3><span>RoR · Hades</span></h3>
-            <p>Xem trước hiệu ứng đang chọn.</p>
+            <p>Preview</p>
           </div>
         </article>
       </div>
