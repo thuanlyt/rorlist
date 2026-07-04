@@ -2216,6 +2216,84 @@ export const groups = [
         "origin": "Hỗn hợp"
       }
     ]
+  },
+  {
+    "id": "human-origin",
+    "title": "Khởi Nguyên Nhân Loại",
+    "subtitle": "Những nhân vật gắn với Adam, Eva và câu chuyện khởi đầu của nhân loại.",
+    "origin": "RoR Canon",
+    "items": [
+      {
+        "id": "human-origin-eve",
+        "name": "Eve",
+        "desc": "người phụ nữ đầu tiên, vợ của Adam",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "human-origin-cain",
+        "name": "Cain",
+        "desc": "con trai đầu của Adam và Eve",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "human-origin-abel",
+        "name": "Abel",
+        "desc": "con trai thứ hai của Adam và Eve",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "human-origin-the-serpent",
+        "name": "The Serpent",
+        "desc": "kẻ gây biến cố trong Vườn Địa Đàng",
+        "origin": "RoR Canon"
+      }
+    ]
+  },
+  {
+    "id": "ror-abyss-side",
+    "title": "Ngoại Hệ và Vực Sâu RoR",
+    "subtitle": "Những thực thể bóng tối và nhân vật phụ liên quan đến các bi kịch của thần linh trong Ragnarok.",
+    "origin": "RoR Canon",
+    "items": [
+      {
+        "id": "ror-abyss-side-satan",
+        "name": "Satan",
+        "desc": "thực thể bóng tối liên quan đến Beelzebub",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-abyss-side-lilith",
+        "name": "Lilith",
+        "desc": "nhân vật gắn với bi kịch của Beelzebub",
+        "origin": "RoR Canon"
+      }
+    ]
+  },
+  {
+    "id": "ror-side-legends",
+    "title": "Nhân Vật Liên Quan Nổi Bật",
+    "subtitle": "Những nhân vật phụ có liên hệ đáng chú ý với các đấu sĩ, thần linh và âm mưu của Ragnarok.",
+    "origin": "RoR Canon",
+    "items": [
+      {
+        "id": "ror-side-legends-siegfried",
+        "name": "Siegfried",
+        "desc": "á thần bị giam ở Tartarus, gắn với Brunhilde",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-side-legends-adamas",
+        "name": "Adamas",
+        "desc": "thần chinh phục Hy Lạp và anh em của Zeus",
+        "origin": "RoR Canon"
+      },
+      {
+        "id": "ror-side-legends-fafnir",
+        "name": "Fafnir",
+        "desc": "rồng liên quan đến truyền thuyết Siegfried",
+        "origin": "RoR Canon"
+      }
+    ]
   }
 ];
 

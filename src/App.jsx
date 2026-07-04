@@ -102,6 +102,15 @@ const FAMOUS_NAMES = {
   'Cu Chulainn': { element: 'Mộc', color: '#22c55e' },
   Morrigan: { element: 'Âm', color: '#a78bfa' },
   'Ahura Mazda': { element: 'Hỏa', color: '#facc15' },
+  Eve: { element: 'Mộc', color: '#86efac' },
+  Cain: { element: 'Hỏa', color: '#f97316' },
+  Abel: { element: 'Kim', color: '#e5e7eb' },
+  'The Serpent': { element: 'Mộc', color: '#22c55e' },
+  Satan: { element: 'Hỏa', color: '#dc2626' },
+  Lilith: { element: 'Âm', color: '#c084fc' },
+  Siegfried: { element: 'Kim', color: '#bfdbfe' },
+  Adamas: { element: 'Thổ', color: '#d97706' },
+  Fafnir: { element: 'Hỏa', color: '#ef4444' },
 };
 
 

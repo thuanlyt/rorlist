@@ -5,9 +5,9 @@ Production source cho landing page danh sách tên Record of Ragnarok.
 ## Nội dung
 
 - React + Vite
-- 28 nhóm
-- 332 tên
-- Phân nhóm theo thần thoại, RoR Canon, Valkyrie, cõi giới, chiến binh và quái vật
+- 31 nhóm
+- 341 tên
+- Phân nhóm theo thần thoại, RoR Canon, Valkyrie, cõi giới, chiến binh, nhân loại, ngoại hệ và quái vật
 - Tìm kiếm tên, mô tả và nhóm
 - Lọc theo nhóm
 - Copy từng tên
