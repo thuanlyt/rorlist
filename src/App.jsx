@@ -32,11 +32,16 @@ import { PREFIX, allItems, groups, totalNames } from './data/names.js';
 import { hasSupabaseConfig, supabase } from './lib/supabase.js';
 
 const layoutModes = ['grid', 'compact', 'list'];
+const EFFECT_TYPES = ['sweep', 'pulse', 'breathe', 'static'];
 const FALLBACK_SETTINGS = {
   effect_type: 'sweep',
   effect_duration: 1.7,
   effect_intensity: 0.82,
 };
+
+function normalizeEffectType(value) {
+  return EFFECT_TYPES.includes(value) ? value : FALLBACK_SETTINGS.effect_type;
+}
 
 const ELEMENT_OPTIONS = [
   { value: '', label: 'Giữ mặc định' },
@@ -314,9 +319,13 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
+    const intensity = Number(settings.effect_intensity || FALLBACK_SETTINGS.effect_intensity);
     document.documentElement.style.setProperty('--effect-duration', `${settings.effect_duration}s`);
-    document.documentElement.style.setProperty('--effect-intensity', String(settings.effect_intensity));
-    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.75, settings.effect_intensity * 1.35)));
+    document.documentElement.style.setProperty('--effect-intensity', String(intensity));
+    document.documentElement.style.setProperty('--effect-alpha', String(Math.min(1, Math.max(0.28, intensity))));
+    document.documentElement.style.setProperty('--effect-alpha-soft', String(Math.min(0.7, Math.max(0.14, intensity * 0.55))));
+    document.documentElement.style.setProperty('--effect-alpha-faint', String(Math.min(0.36, Math.max(0.08, intensity * 0.25))));
+    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.9, intensity * 1.6)));
   }, [settings]);
 
   function loadLocalData() {
@@ -367,7 +376,7 @@ function App() {
     }
     if (data) {
       setSettings({
-        effect_type: data.effect_type || FALLBACK_SETTINGS.effect_type,
+        effect_type: normalizeEffectType(data.effect_type),
         effect_duration: Number(data.effect_duration || FALLBACK_SETTINGS.effect_duration),
         effect_intensity: Number(data.effect_intensity || FALLBACK_SETTINGS.effect_intensity),
       });
@@ -879,7 +888,8 @@ function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOp
     : FAMOUS_NAMES[item.name];
   const rgb = visualStyle ? hexToRgb(visualStyle.color) : '45, 212, 191';
   const used = Boolean(claim?.owner_name);
-  const effectClass = visualStyle && settings.effect_type !== 'static' ? `effect-${settings.effect_type}` : '';
+  const effectType = normalizeEffectType(settings.effect_type);
+  const effectClass = visualStyle && effectType !== 'static' ? `effect-${effectType}` : '';
 
   function onCardClick() {
     if (used) onOpenDetails();
@@ -892,7 +902,7 @@ function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOp
       onClick={onCardClick}
       style={{ '--feng': visualStyle?.color || '#2dd4bf', '--feng-rgb': rgb, '--delay': index % 8 }}
     >
-      {visualStyle && settings.effect_type !== 'static' && <span className="effect-layer" aria-hidden="true" />}
+      {visualStyle && effectType !== 'static' && <span className="effect-layer" aria-hidden="true" />}
       <div className="name-body">
         <div className="tag-row">
           <span className={`name-origin ${visualStyle ? 'feng-tag' : ''}`}>{item.origin}</span>
@@ -1095,12 +1105,16 @@ function DetailsModal({ admin, busy, claim, item, onClose, onEdit, onRelease, vi
 }
 
 function EffectModal({ busy, settings, onClose, onSave }) {
-  const [form, setForm] = useState(settings);
+  const [form, setForm] = useState(() => ({ ...settings, effect_type: normalizeEffectType(settings.effect_type) }));
 
   useEffect(() => {
+    const intensity = Number(form.effect_intensity || FALLBACK_SETTINGS.effect_intensity);
     document.documentElement.style.setProperty('--effect-duration', `${form.effect_duration}s`);
-    document.documentElement.style.setProperty('--effect-intensity', String(form.effect_intensity));
-    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.75, form.effect_intensity * 1.35)));
+    document.documentElement.style.setProperty('--effect-intensity', String(intensity));
+    document.documentElement.style.setProperty('--effect-alpha', String(Math.min(1, Math.max(0.28, intensity))));
+    document.documentElement.style.setProperty('--effect-alpha-soft', String(Math.min(0.7, Math.max(0.14, intensity * 0.55))));
+    document.documentElement.style.setProperty('--effect-alpha-faint', String(Math.min(0.36, Math.max(0.08, intensity * 0.25))));
+    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.9, intensity * 1.6)));
   }, [form]);
 
   function update(key, value) {
@@ -1132,7 +1146,7 @@ function EffectModal({ busy, settings, onClose, onSave }) {
           <span>Cường độ: {Math.round(Number(form.effect_intensity) * 100)}%</span>
           <input type="range" min="0.2" max="1" step="0.05" value={form.effect_intensity} onChange={(event) => update('effect_intensity', Number(event.target.value))} />
         </label>
-        <article className={`name-card is-famous effect-${form.effect_type} preview-card`} style={{ '--feng': '#0284c7', '--feng-rgb': '2, 132, 199' }}>
+        <article className={`name-card is-famous ${form.effect_type !== 'static' ? `effect-${normalizeEffectType(form.effect_type)}` : ''} preview-card`} style={{ '--feng': '#0284c7', '--feng-rgb': '2, 132, 199' }}>
           {form.effect_type !== 'static' && <span className="effect-layer" aria-hidden="true" />}
           <div className="name-body">
             <div className="tag-row"><span className="name-origin feng-tag">Preview</span></div>
