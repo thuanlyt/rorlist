@@ -2075,8 +2075,8 @@ export const groups = [
     "items": [
       {
         "id": "human-origin-eve",
-        "name": "Eve",
-        "desc": "người phụ nữ đầu tiên, vợ của Adam",
+        "name": "Eve/Eva",
+        "desc": "người phụ nữ đầu tiên, vợ của Adam và là mẹ của thiên hạ",
         "origin": "RoR Canon"
       },
       {

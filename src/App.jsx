@@ -144,7 +144,7 @@ const FAMOUS_NAMES = {
   'Cu Chulainn': { element: 'Mộc', color: '#15803d' },
   Morrigan: { element: 'Âm', color: '#7c3aed' },
   'Ahura Mazda': { element: 'Hỏa', color: '#ca8a04' },
-  Eve: { element: 'Mộc', color: '#15803d' },
+  'Eve/Eva': { element: 'Mộc', color: '#15803d' },
   Cain: { element: 'Hỏa', color: '#ea580c' },
   Abel: { element: 'Kim', color: '#a16207' },
   'The Serpent': { element: 'Mộc', color: '#16a34a' },

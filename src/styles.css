@@ -1048,3 +1048,47 @@ h1 {
   .name-origin,
   .pill { font-size: 10.5px; padding: 5px 7px; }
 }
+
+
+/* Patch: tooltip above cards + Eve/Eva release */
+.group,
+.cards,
+.name-card {
+  overflow: visible;
+}
+
+.effect-layer {
+  overflow: hidden;
+}
+
+.style-custom-indicator {
+  z-index: 60;
+}
+
+.style-custom-indicator::after {
+  z-index: 9999;
+  bottom: calc(100% + 10px);
+}
+
+.style-custom-indicator::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 3px);
+  z-index: 9999;
+  width: 8px;
+  height: 8px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--panel);
+  border-right: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .14s ease;
+}
+
+.style-custom-indicator:hover::before,
+.style-custom-indicator:focus-visible::before,
+.style-custom-indicator:active::before {
+  opacity: 1;
+}
