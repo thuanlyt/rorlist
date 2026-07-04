@@ -225,7 +225,7 @@ function useOutsideClick(ref, onClose) {
   }, [ref, onClose]);
 }
 
-function SelectBox({ icon: Icon, label, options, value, onChange }) {
+function SelectBox({ icon: Icon, label, options, value, onChange, className = '' }) {
   const [open, setOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState(null);
   const ref = useRef(null);
@@ -308,7 +308,7 @@ function SelectBox({ icon: Icon, label, options, value, onChange }) {
   ) : null;
 
   return (
-    <div className="custom-select" ref={ref}>
+    <div className={`custom-select ${className}`} ref={ref}>
       <button
         className={`select-trigger ${open ? 'is-open' : ''}`}
         type="button"
@@ -319,6 +319,7 @@ function SelectBox({ icon: Icon, label, options, value, onChange }) {
       >
         <Icon size={18} />
         <span className="select-trigger-text">{selected?.label || label}</span>
+        {selected?.count !== undefined && <strong className="select-trigger-count">{selected.count}</strong>}
         <ChevronDown className={`select-chevron ${open ? 'is-open' : ''}`} size={18} />
       </button>
       {menu}
@@ -494,12 +495,6 @@ function App() {
     ...groups.map((group) => ({ value: group.id, label: group.title, count: group.items.length })),
   ], []);
 
-  const statusOptions = [
-    { value: 'all', label: 'Tất cả', count: totalNames },
-    { value: 'free', label: 'Còn trống' },
-    { value: 'used', label: 'Đã dùng' },
-  ];
-
   const filteredGroups = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return groups
@@ -520,7 +515,13 @@ function App() {
 
   const visibleCount = filteredGroups.reduce((sum, group) => sum + group.items.length, 0);
   const usedCount = Object.keys(claims).length;
+  const freeCount = Math.max(totalNames - usedCount, 0);
   const styledCount = allItems.filter((item) => getVisualStyle(item, nameStyles)).length;
+  const statusOptions = [
+    { value: 'all', label: 'Tất cả', count: totalNames },
+    { value: 'free', label: 'Còn trống', count: freeCount },
+    { value: 'used', label: 'Đã dùng', count: usedCount },
+  ];
 
   function openModal(nextModal) {
     window.clearTimeout(closeTimerRef.current);
@@ -837,7 +838,7 @@ function App() {
             <span className="pill"><strong>{groups.length}</strong> nhóm</span>
             <span className="pill"><strong>{totalNames}</strong> tên</span>
             <span className="pill"><strong>{usedCount}</strong> đã dùng</span>
-            <span className="pill"><strong>{totalNames - usedCount}</strong> còn trống</span>
+            <span className="pill"><strong>{freeCount}</strong> còn trống</span>
             <span className="pill"><strong>{styledCount}</strong> nổi bật</span>
             <span className={`pill ${syncClass}`}><strong>{syncText}</strong></span>
             <span className="pill"><strong>{settings.effect_type}</strong> effect</span>
@@ -850,11 +851,8 @@ function App() {
             <input value={query} onChange={(event) => setQuery(event.target.value)} type="text" placeholder="Tìm tên, người dùng, ghi chú..." />
             {query && <button className="clear-button" type="button" onClick={() => setQuery('')} aria-label="Xóa tìm kiếm"><X size={16} /></button>}
           </label>
-          <SelectBox icon={Check} label="Trạng thái" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
-          <SelectBox icon={Filter} label="Nhóm" options={groupOptions} value={selectedGroup} onChange={setSelectedGroup} />
-          <button className="soft-button primary copy-available" type="button" onClick={copyAvailableNames}>
-            <Copy size={17} /> Copy tên trống
-          </button>
+          <SelectBox className="status-select" icon={Check} label="Trạng thái" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
+          <SelectBox className="group-select" icon={Filter} label="Nhóm" options={groupOptions} value={selectedGroup} onChange={setSelectedGroup} />
         </section>
 
         <section className="summary-row">

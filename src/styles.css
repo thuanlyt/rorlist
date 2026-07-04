@@ -1107,3 +1107,84 @@ h1 {
   from { opacity: 0; transform: translateY(4px) scale(.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Patch: filter ratio 1/4 + 1/4 + 2/4, status counts, no copy button */
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, 1fr) minmax(300px, 2fr);
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: visible;
+  gap: 8px;
+}
+.toolbar > * {
+  min-width: 0;
+}
+.toolbar .search-box {
+  flex: initial;
+  width: 100%;
+  min-width: 0;
+}
+.toolbar .custom-select,
+.toolbar .status-select,
+.toolbar .group-select {
+  width: 100%;
+  min-width: 0;
+}
+.select-trigger-count {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 900;
+}
+.select-trigger.is-open .select-trigger-count,
+.select-trigger:hover .select-trigger-count {
+  color: var(--accent);
+  background: var(--accent-weak);
+}
+.floating-select-menu {
+  min-width: min(320px, calc(100vw - 24px));
+}
+.status-select .floating-select-menu {
+  min-width: min(240px, calc(100vw - 24px));
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    display: grid;
+    grid-template-columns: minmax(170px, 1fr) minmax(142px, 1fr) minmax(270px, 2fr);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+  .toolbar .search-box {
+    grid-column: auto;
+    flex: initial;
+    width: 100%;
+    min-width: 0;
+  }
+  .toolbar .custom-select {
+    min-width: 0;
+  }
+  .select-trigger-count {
+    min-width: 24px;
+    height: 20px;
+    padding: 0 7px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .toolbar {
+    grid-template-columns: 170px 142px 280px;
+  }
+}
