@@ -1,0 +1,4 @@
+Netlify deploy fix:
+- package-lock.json was intentionally removed because the previous lock file contained internal OpenAI registry URLs and caused ETIMEDOUT on Netlify.
+- .npmrc forces npm to use https://registry.npmjs.org/.
+- netlify.toml pins Node 20 and sets NPM_CONFIG_REGISTRY as backup.
