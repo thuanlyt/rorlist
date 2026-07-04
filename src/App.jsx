@@ -20,6 +20,8 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
+  Sword,
+  Settings2,
   Sun,
   Trash2,
   Unlock,
@@ -742,7 +744,7 @@ function App() {
       <main className={`app layout-${layout}`}>
         <header className="topbar" id="top">
           <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); scrollToTopAnimated(); }}>
-            <span className="brand-mark">RoR</span>
+            <span className="brand-mark"><Sword size={22} /></span>
             <span className="brand-text">Record of Ragnarok</span>
           </a>
           <div className="top-actions">
@@ -778,7 +780,7 @@ function App() {
         <section className="toolbar">
           <label className="search-box">
             <Search size={18} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} type="search" placeholder="Tìm tên, người dùng, ghi chú..." />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} type="text" placeholder="Tìm tên, người dùng, ghi chú..." />
             {query && <button className="clear-button" type="button" onClick={() => setQuery('')} aria-label="Xóa tìm kiếm"><X size={16} /></button>}
           </label>
           <SelectBox icon={Check} label="Trạng thái" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
@@ -802,8 +804,11 @@ function App() {
           {filteredGroups.map((group) => (
             <article className="group" key={group.id} data-group-section>
               <header className="group-header">
-                <span className="pill origin-pill">{group.origin} · {group.items.length} tên</span>
-                <h2>{group.title}</h2>
+                <div className="group-title-row">
+                  <h2>{group.title}</h2>
+                  <span className="pill origin-pill">{group.items.length} tên</span>
+                </div>
+                <p>{group.subtitle}</p>
               </header>
               <div className="cards">
                 {group.items.map((item, index) => (
@@ -907,8 +912,12 @@ function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOp
         <div className="tag-row">
           <span className={`name-origin ${visualStyle ? 'feng-tag' : ''}`}>{item.origin}</span>
           {visualStyle && <span className="name-origin feng-tag">Mệnh {visualStyle.element}</span>}
-          {styleOverride?.custom_color && <span className="name-origin custom-tag">Custom</span>}
           <span className={`name-origin ${used ? 'used-tag' : 'free-tag'}`}>{used ? 'Đã dùng' : 'Còn trống'}</span>
+          {styleOverride?.custom_color && (
+            <span className="style-custom-indicator" tabIndex={0} aria-label="Màu sắc được custom" data-tooltip="Màu sắc được custom">
+              <Settings2 size={12} />
+            </span>
+          )}
         </div>
         <h3>
           <span>{makeDisplayName(item.name)}</span>

@@ -1,49 +1,58 @@
 # Record of Ragnarok Name Archive
 
-Production React/Vite source for a Record of Ragnarok name registry.
+Dự án web quản lý kho tên phong cách **Record of Ragnarok / thần thoại / hội game**. Trang hỗ trợ xem danh sách tên, lọc trạng thái, đánh dấu tên đã có người dùng, khai báo danh tính người sử dụng, tùy chỉnh màu/mệnh từng tên và đồng bộ dữ liệu qua Supabase.
 
-## Main features
+## Tính năng chính
 
-- Full name archive grouped by mythology / RoR category.
-- Search, group filter, used/free filter, copy available names.
-- Admin mode for assigning a name to a real user/player.
-- Owner name is shown beside the main name in neutral text.
-- Full owner details open in a modal.
-- Modal open/close animation is implemented in React + CSS.
-- Highlight effects are applied to famous names only.
-- Admin can sync the global highlight effect across all devices through Supabase.
-- Supabase Realtime subscription updates name claims and UI effect settings across devices.
+- Danh sách tên được chia theo nhóm thần thoại, nhân vật, Valkyrie, chiến binh và ngoại hệ.
+- Tìm kiếm theo tên, nhóm, người sử dụng, liên hệ hoặc ghi chú.
+- Lọc tên theo trạng thái: tất cả, còn trống, đã dùng.
+- Copy nhanh toàn bộ tên còn trống.
+- Chế độ Admin để gán tên cho người dùng trong game.
+- Modal xem đầy đủ thông tin người đang sử dụng tên.
+- Tùy chỉnh màu và mệnh cho từng tên; dữ liệu custom trên Supabase sẽ đè lên màu/mệnh mặc định.
+- Tùy chỉnh hiệu ứng tên nổi bật và đồng bộ hiệu ứng giữa các thiết bị.
+- Responsive desktop, tablet và mobile.
+- Dark mode / light mode.
 
-## Netlify / Vercel environment variables
+## Biến môi trường
 
-Create these variables in your hosting dashboard:
+Tạo các biến sau trong Netlify hoặc Vercel:
 
 ```env
-VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_IMGBB_API_KEY=optional_if_image_upload_is_used_later
 ```
 
-`VITE_IMGBB_API_KEY` is not required for this version because image upload is not used yet.
+Không đưa mật khẩu admin vào `.env.example`, GitHub hoặc source frontend. Mật khẩu admin được tạo bằng SQL trong Supabase và được kiểm tra qua RPC.
 
-## Supabase setup
+## Cài đặt Supabase
 
-1. Open Supabase Dashboard.
-2. Go to SQL Editor.
-3. Open `supabase/schema.sql` from this source.
-4. Replace `<ADMIN_PASSWORD>` with your private admin password.
-5. Run the SQL once.
-6. Do not commit a SQL file containing the real password to GitHub.
+1. Mở Supabase Dashboard.
+2. Vào SQL Editor.
+3. Mở file `supabase/schema.sql` trong source.
+4. Thay placeholder `<ADMIN_PASSWORD>` bằng mật khẩu admin riêng của bạn ngay trong SQL Editor.
+5. Chạy SQL một lần.
+6. Không commit file SQL đã chứa mật khẩu thật lên GitHub.
 
-The SQL creates:
+Các bảng chính:
 
-- `ror_name_claims`
-- `ror_ui_settings`
-- `ror_admin_settings`
-- Admin RPC functions for password check, name assignment, name release, and effect settings.
+- `ror_admin_settings`: lưu hash mật khẩu admin.
+- `ror_name_claims`: lưu tên đã được sử dụng và thông tin người dùng.
+- `ror_ui_settings`: lưu hiệu ứng giao diện.
+- `ror_name_styles`: lưu màu/mệnh custom từng tên.
 
-The frontend uses the anon key only. Writes go through SECURITY DEFINER RPC functions and require the admin password.
+Các RPC chính:
 
-## Local development
+- `ror_admin_check`
+- `ror_upsert_name_claim`
+- `ror_delete_name_claim`
+- `ror_update_ui_settings`
+- `ror_upsert_name_style`
+- `ror_delete_name_style`
+
+## Chạy local
 
 ```bash
 npm install
@@ -51,20 +60,38 @@ cp .env.example .env.local
 npm run dev
 ```
 
-## Production build
+## Build production
 
 ```bash
 npm run build
 ```
 
-Publish directory:
+Cấu hình deploy:
 
 ```text
-dist
+Build command: npm run build
+Publish directory: dist
 ```
 
-Build command:
+## Ghi chú bản quyền
 
-```text
-npm run build
-```
+Dự án này là công cụ quản lý danh sách tên do người dùng tự triển khai. Dự án không phải sản phẩm chính thức của **Record of Ragnarok**, Warner Bros. Japan, Coamix, Shinya Umemura, Takumi Fukui, Ajichika hoặc bất kỳ chủ sở hữu bản quyền liên quan nào.
+
+Tên **Record of Ragnarok** và các nhân vật thuộc tác phẩm gốc được dùng với mục đích tham chiếu, phân loại và quản lý nội bộ. Không sử dụng dự án này để mạo nhận thương hiệu chính thức.
+
+Các tên thần thoại như Zeus, Hades, Odin, Thor, Loki, Anubis, Shiva, Buddha và các tên tương tự là tên thuộc thần thoại, tôn giáo, văn hóa dân gian hoặc tư liệu công cộng. Cách mô tả trong dự án được viết ngắn gọn lại để phục vụ việc đặt tên hội/game.
+
+## Nguồn tham khảo nội dung tên
+
+Nguồn tham khảo tổng quan cho tên thần thoại và nhân vật:
+
+- Theoi Greek Mythology: https://www.theoi.com/
+- Encyclopaedia Britannica: https://www.britannica.com/
+- Wikipedia Mythology overview: https://en.wikipedia.org/wiki/Mythology
+- Norse Mythology overview: https://en.wikipedia.org/wiki/Norse_mythology
+- Greek Mythology overview: https://en.wikipedia.org/wiki/Greek_mythology
+- Hindu Mythology overview: https://en.wikipedia.org/wiki/Hindu_mythology
+- Egyptian Mythology overview: https://en.wikipedia.org/wiki/Egyptian_mythology
+- Record of Ragnarok Wiki: https://record-of-ragnarok.fandom.com/wiki/Shuumatsu_no_Valkyrie:_Record_of_Ragnarok_Wiki
+
+Nội dung trong source không sao chép nguyên văn từ các nguồn trên; mô tả đã được rút gọn và biên tập lại bằng tiếng Việt.
