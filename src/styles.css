@@ -1188,3 +1188,17 @@ h1 {
     grid-template-columns: 170px 142px 280px;
   }
 }
+
+/* Patch: giữ tooltip nổi nhưng trả lại bo góc chuẩn cho khối nhóm */
+.group {
+  overflow: visible;
+  border-radius: var(--radius-lg);
+}
+.group-header {
+  border-top-left-radius: calc(var(--radius-lg) - 1px);
+  border-top-right-radius: calc(var(--radius-lg) - 1px);
+}
+.cards {
+  border-bottom-left-radius: calc(var(--radius-lg) - 1px);
+  border-bottom-right-radius: calc(var(--radius-lg) - 1px);
+}
