@@ -1,19 +1,41 @@
 # Record of Ragnarok Name Archive
 
-Dự án web quản lý kho tên phong cách **Record of Ragnarok / thần thoại / hội game**. Trang hỗ trợ xem danh sách tên, lọc trạng thái, đánh dấu tên đã có người dùng, khai báo danh tính người sử dụng, tùy chỉnh màu/mệnh từng tên và đồng bộ dữ liệu qua Supabase.
+Web quản lý kho tên phong cách **Record of Ragnarok / thần thoại / hội game**. Dự án hỗ trợ xem danh sách tên, lọc trạng thái, quản trị tên đã dùng, đồng bộ dữ liệu qua Supabase, tùy chỉnh màu/mệnh từng tên và xem nhanh bảng thành viên đã đăng ký tên.
 
 ## Tính năng chính
 
-- Danh sách tên được chia theo nhóm thần thoại, nhân vật, Valkyrie, chiến binh và ngoại hệ.
+- Trang chủ `/`: danh sách tên thần thoại và nhân vật được chia theo nhóm.
+- Trang `/list`: bảng nhanh các tên đã được đăng ký.
 - Tìm kiếm theo tên, nhóm, người sử dụng, liên hệ hoặc ghi chú.
-- Lọc tên theo trạng thái: tất cả, còn trống, đã dùng.
-- Copy nhanh toàn bộ tên còn trống.
+- Lọc theo trạng thái: tất cả, còn trống, đã dùng.
 - Chế độ Admin để gán tên cho người dùng trong game.
 - Modal xem đầy đủ thông tin người đang sử dụng tên.
-- Tùy chỉnh màu và mệnh cho từng tên; dữ liệu custom trên Supabase sẽ đè lên màu/mệnh mặc định.
+- Tùy chỉnh màu và mệnh cho từng tên.
+- Màu/mệnh custom trên Supabase sẽ đè lên màu/mệnh mặc định trong source.
 - Tùy chỉnh hiệu ứng tên nổi bật và đồng bộ hiệu ứng giữa các thiết bị.
-- Responsive desktop, tablet và mobile.
 - Dark mode / light mode.
+- Responsive desktop, tablet và mobile.
+
+## Trang `/list`
+
+Trang `/list` hiển thị bảng các thành viên đã đăng ký tên.
+
+Thứ tự cột:
+
+```text
+Tên cũ | Tên mới | Tên Zalo | Ghi chú
+```
+
+Mapping dữ liệu:
+
+```text
+Tên cũ   = Người đang sử dụng
+Tên mới  = Tên thần tương ứng
+Tên Zalo = Danh tính / liên hệ
+Ghi chú  = Ghi chú
+```
+
+Ở mọi trang, bấm vào icon hoặc chữ **Record of Ragnarok** trên header sẽ quay về trang chủ `/`.
 
 ## Biến môi trường
 
@@ -72,6 +94,8 @@ Cấu hình deploy:
 Build command: npm run build
 Publish directory: dist
 ```
+
+Netlify cần file `netlify.toml` để route `/list` hoạt động trực tiếp khi reload trang.
 
 ## Ghi chú bản quyền
 

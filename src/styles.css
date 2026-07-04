@@ -1213,3 +1213,116 @@ h1 {
   border-bottom-left-radius: calc(var(--radius-lg) - 1px);
   border-bottom-right-radius: calc(var(--radius-lg) - 1px);
 }
+
+/* Feature: trang /list - bảng tên đã đăng ký */
+button.pill {
+  cursor: pointer;
+  font: inherit;
+}
+.nav-pill {
+  color: var(--accent);
+  border-color: rgba(45, 212, 191, .34);
+  background: var(--accent-weak);
+  font-weight: 900;
+}
+.nav-pill:hover,
+.nav-pill:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(45, 212, 191, .52);
+  box-shadow: 0 12px 22px rgba(0,0,0,.12);
+}
+.list-page {
+  display: grid;
+  gap: 18px;
+  animation: pageRise .44s cubic-bezier(.2,.8,.2,1) both;
+}
+.list-hero {
+  padding: 30px 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.list-hero h1 {
+  margin-bottom: 10px;
+  font-size: clamp(30px, 4vw, 54px);
+  white-space: normal;
+}
+.list-hero p {
+  max-width: 780px;
+  margin-bottom: 0;
+  color: var(--muted);
+}
+.registered-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.registered-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.registered-table th,
+.registered-table td {
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.registered-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+.registered-table td {
+  color: var(--muted);
+  font-size: 14px;
+}
+.registered-table tbody tr:hover td {
+  background: rgba(45, 212, 191, .045);
+}
+.registered-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.registered-table td:nth-child(1),
+.registered-table td:nth-child(2) {
+  color: var(--text);
+  font-weight: 800;
+}
+.table-empty {
+  padding: 34px 16px !important;
+  text-align: center !important;
+  color: var(--muted) !important;
+  font-weight: 800;
+}
+.list-footer-actions {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 760px) {
+  .list-hero {
+    padding: 20px;
+  }
+  .list-hero h1 {
+    font-size: clamp(28px, 9vw, 42px);
+  }
+  .registered-table {
+    min-width: 680px;
+  }
+  .registered-table th,
+  .registered-table td {
+    padding: 12px;
+    font-size: 13px;
+  }
+}

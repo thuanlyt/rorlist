@@ -377,6 +377,7 @@ function App() {
   const [modal, setModal] = useState(null);
   const [modalClosing, setModalClosing] = useState(false);
   const [toast, setToast] = useState('');
+  const [path, setPath] = useState(() => (window.location.pathname === '/list' ? '/list' : '/'));
   const [syncStatus, setSyncStatus] = useState(hasSupabaseConfig ? 'connecting' : 'local');
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState('');
@@ -387,6 +388,14 @@ function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('ror-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    function onPopState() {
+      setPath(window.location.pathname === '/list' ? '/list' : '/');
+    }
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   useEffect(() => {
     const intensity = Number(settings.effect_intensity || FALLBACK_SETTINGS.effect_intensity);
@@ -522,6 +531,22 @@ function App() {
     { value: 'free', label: 'Còn trống', count: freeCount },
     { value: 'used', label: 'Đã dùng', count: usedCount },
   ];
+
+  const itemById = useMemo(() => Object.fromEntries(allItems.map((item) => [item.id, item])), []);
+
+  const registeredRows = useMemo(() => Object.values(claims)
+    .filter((claim) => claim?.owner_name)
+    .map((claim) => {
+      const item = itemById[claim.name_id];
+      return {
+        id: claim.name_id,
+        oldName: claim.owner_name || '',
+        newName: item ? makeDisplayName(item.name) : claim.display_name || claim.name_id,
+        zalo: claim.identity_text || '',
+        note: claim.note || '',
+      };
+    })
+    .sort((a, b) => a.oldName.localeCompare(b.oldName, 'vi')), [claims, itemById]);
 
   function openModal(nextModal) {
     window.clearTimeout(closeTimerRef.current);
@@ -803,6 +828,15 @@ function App() {
     return <LayoutGrid size={18} />;
   }
 
+  function navigateTo(nextPath) {
+    const normalized = nextPath === '/list' ? '/list' : '/';
+    if (window.location.pathname !== normalized) {
+      window.history.pushState({}, '', normalized);
+    }
+    setPath(normalized);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   const syncClass = `sync-${syncStatus}`;
   const syncText = syncStatus === 'online' ? 'Supabase online' : syncStatus === 'connecting' ? 'Đang đồng bộ' : syncStatus === 'local' ? 'Local mode' : 'Supabase lỗi';
 
@@ -811,7 +845,7 @@ function App() {
       <div className="scroll-to-top-indicator" id="scrollIndicator" aria-hidden="true" />
       <main className={`app layout-${layout}`}>
         <header className="topbar" id="top">
-          <a className="brand" href="#top" onClick={(event) => { event.preventDefault(); scrollToTopAnimated(); }}>
+          <a className="brand" href="/" onClick={(event) => { event.preventDefault(); navigateTo('/'); }}>
             <span className="brand-mark"><Sword size={22} /></span>
             <span className="brand-text">Record of Ragnarok</span>
           </a>
@@ -830,11 +864,16 @@ function App() {
           </div>
         </header>
 
+        {path === '/list' ? (
+          <RegisteredListPage rows={registeredRows} onHome={() => navigateTo('/')} />
+        ) : (
+          <>
         <section className="hero-panel">
           <div className="eyebrow"><Sparkles size={16} /> Name Registry</div>
           <h1>Record of Ragnarok Name Archive</h1>
           <p>Bộ sưu tập tên thần thoại, nhân vật huyền thoại và tên hội phong cách Ragnarok.</p>
           <div className="stats">
+            <button className="pill nav-pill" type="button" onClick={() => navigateTo('/list')}>Xem tên đã đăng ký</button>
             <span className="pill"><strong>{groups.length}</strong> nhóm</span>
             <span className="pill"><strong>{totalNames}</strong> tên</span>
             <span className="pill"><strong>{usedCount}</strong> đã dùng</span>
@@ -913,6 +952,8 @@ function App() {
           <button type="button" onClick={scrollToNextGroup}><ArrowDown size={18} /> <span>Next</span></button>
           <button type="button" onClick={scrollToTopAnimated}><ArrowUp size={18} /> <span>Top</span></button>
         </div>
+          </>
+        )}
       </main>
 
       {toast && <div className="toast">{toast}</div>}
@@ -949,6 +990,52 @@ function App() {
         </ModalShell>
       )}
     </>
+  );
+}
+
+
+function RegisteredListPage({ rows, onHome }) {
+  return (
+    <section className="list-page" id="top">
+      <div className="list-hero">
+        <span className="eyebrow"><List size={16} /> Danh sách đăng ký</span>
+        <h1>Tên đã đăng ký</h1>
+        <p>Bảng xem nhanh những thành viên đã đăng ký tên trong hội.</p>
+      </div>
+
+      <div className="registered-table-wrap">
+        <table className="registered-table">
+          <thead>
+            <tr>
+              <th>Tên cũ</th>
+              <th>Tên mới</th>
+              <th>Tên Zalo</th>
+              <th>Ghi chú</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length ? rows.map((row) => (
+              <tr key={row.id}>
+                <td>{row.oldName || '—'}</td>
+                <td>{row.newName || '—'}</td>
+                <td>{row.zalo || '—'}</td>
+                <td>{row.note || '—'}</td>
+              </tr>
+            )) : (
+              <tr>
+                <td colSpan="4" className="table-empty">Chưa có tên nào được đăng ký.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="list-footer-actions">
+        <button className="soft-button" type="button" onClick={onHome}>
+          <ArrowUp size={17} /> Quay về trang chủ
+        </button>
+      </div>
+    </section>
   );
 }
 
