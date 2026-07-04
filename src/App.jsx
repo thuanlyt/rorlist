@@ -281,9 +281,13 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
+    const intensity = Number(settings.effect_intensity || FALLBACK_SETTINGS.effect_intensity);
     document.documentElement.style.setProperty('--effect-duration', `${settings.effect_duration}s`);
-    document.documentElement.style.setProperty('--effect-intensity', String(settings.effect_intensity));
-    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.75, settings.effect_intensity * 1.35)));
+    document.documentElement.style.setProperty('--effect-intensity', String(intensity));
+    document.documentElement.style.setProperty('--effect-alpha', String(Math.min(1, Math.max(0.28, intensity))));
+    document.documentElement.style.setProperty('--effect-alpha-soft', String(Math.min(0.7, Math.max(0.14, intensity * 0.55))));
+    document.documentElement.style.setProperty('--effect-alpha-faint', String(Math.min(0.36, Math.max(0.08, intensity * 0.25))));
+    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.9, intensity * 1.6)));
   }, [settings]);
 
   const loadLocalData = () => {
@@ -406,7 +410,7 @@ function App() {
     closeTimerRef.current = window.setTimeout(() => {
       setModal(null);
       setModalClosing(false);
-    }, 240);
+    }, 340);
   }
 
   async function verifyAdmin(password) {
@@ -639,9 +643,6 @@ function App() {
         <section className="hero-panel" id="top">
           <div className="eyebrow"><Sparkles size={16} /> Name Registry</div>
           <h1>Record of Ragnarok Name Archive</h1>
-          <p>
-            Bộ sưu tập tên thần thoại và nhân vật huyền thoại cho hội, clan hoặc cộng đồng game. Tên đã dùng hiển thị cạnh tên chính, Admin quản lý người sở hữu và hiệu ứng nổi bật được đồng bộ qua Supabase.
-          </p>
           <div className="stats">
             <span className="pill"><strong>{groups.length}</strong> nhóm</span>
             <span className="pill"><strong>{totalNames}</strong> tên</span>
@@ -694,7 +695,6 @@ function App() {
               <header className="group-header">
                 <span className="origin">{group.origin} · {group.items.length} tên</span>
                 <h2>{group.title}</h2>
-                <p>{group.subtitle}</p>
               </header>
               <div className="cards">
                 {group.items.map((item, index) => (
@@ -775,7 +775,7 @@ function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOp
       {famous && settings.effect_type !== 'static' && <span className="effect-layer" aria-hidden="true" />}
       <div className="name-body">
         <div className="tag-row">
-          <span className="name-origin">{item.origin}</span>
+          <span className={`name-origin ${famous ? 'feng-origin' : ''}`}>{item.origin}</span>
           {famous && <span className="name-origin feng-tag">Mệnh {famous.element}</span>}
           <span className={`name-origin ${used ? 'used-tag' : 'free-tag'}`}>{used ? 'Đã dùng' : 'Còn trống'}</span>
         </div>
@@ -817,13 +817,12 @@ function LoginModal({ busy, onClose, onSubmit }) {
 
   return (
     <form onSubmit={submit}>
-      <ModalHeader title="Đăng nhập Admin" subtitle="Admin dùng để đánh dấu tên đã có người sử dụng và tùy chỉnh hiệu ứng đồng bộ." onClose={onClose} />
+      <ModalHeader title="Đăng nhập Admin" onClose={onClose} />
       <div className="modal-body">
         <label className="field">
           <span>Mật khẩu admin</span>
           <input autoFocus value={password} onChange={(event) => setPassword(event.target.value)} type="password" autoComplete="current-password" placeholder="Nhập mật khẩu admin" />
         </label>
-        <p className="hint">Với Supabase, mật khẩu được kiểm tra qua RPC và hash trong database, không lưu trực tiếp ở frontend.</p>
         {error && <p className="error-text">{error}</p>}
       </div>
       <footer className="modal-actions">
@@ -911,9 +910,13 @@ function EffectModal({ busy, settings, onClose, onSave }) {
   const [form, setForm] = useState(settings);
 
   useEffect(() => {
+    const intensity = Number(form.effect_intensity || FALLBACK_SETTINGS.effect_intensity);
     document.documentElement.style.setProperty('--effect-duration', `${form.effect_duration}s`);
-    document.documentElement.style.setProperty('--effect-intensity', String(form.effect_intensity));
-    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.75, form.effect_intensity * 1.35)));
+    document.documentElement.style.setProperty('--effect-intensity', String(intensity));
+    document.documentElement.style.setProperty('--effect-alpha', String(Math.min(1, Math.max(0.28, intensity))));
+    document.documentElement.style.setProperty('--effect-alpha-soft', String(Math.min(0.7, Math.max(0.14, intensity * 0.55))));
+    document.documentElement.style.setProperty('--effect-alpha-faint', String(Math.min(0.36, Math.max(0.08, intensity * 0.25))));
+    document.documentElement.style.setProperty('--effect-blur', String(Math.max(0.9, intensity * 1.6)));
   }, [form]);
 
   function update(key, value) {
@@ -926,7 +929,7 @@ function EffectModal({ busy, settings, onClose, onSave }) {
 
   return (
     <>
-      <ModalHeader title="Thiết lập hiệu ứng" subtitle="Hiệu ứng này được lưu trên Supabase để các thiết bị cùng thấy một cấu hình." onClose={onClose} />
+      <ModalHeader title="Thiết lập hiệu ứng" onClose={onClose} />
       <div className="modal-body">
         <label className="field">
           <span>Kiểu hiệu ứng</span>
