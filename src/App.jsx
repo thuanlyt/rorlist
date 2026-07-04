@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ArrowDown,
   ArrowUp,
@@ -226,35 +227,101 @@ function useOutsideClick(ref, onClose) {
 
 function SelectBox({ icon: Icon, label, options, value, onChange }) {
   const [open, setOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState(null);
   const ref = useRef(null);
-  useOutsideClick(ref, () => setOpen(false));
+  const menuRef = useRef(null);
   const selected = options.find((option) => option.value === value) || options[0];
+
+  function updateMenuPosition() {
+    const trigger = ref.current?.querySelector('.select-trigger');
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const safeGap = 8;
+    const minWidth = Math.max(rect.width, 180);
+    const width = Math.min(minWidth, window.innerWidth - safeGap * 2);
+    const left = Math.min(Math.max(safeGap, rect.left), window.innerWidth - width - safeGap);
+    const top = Math.min(rect.bottom + safeGap, window.innerHeight - 190);
+    const maxHeight = Math.max(180, window.innerHeight - top - safeGap);
+    setMenuPosition({ top, left, width, maxHeight });
+  }
+
+  useEffect(() => {
+    if (!open) return undefined;
+    updateMenuPosition();
+
+    function onPointerDown(event) {
+      if (ref.current?.contains(event.target) || menuRef.current?.contains(event.target)) return;
+      setOpen(false);
+    }
+
+    function onKeyDown(event) {
+      if (event.key === 'Escape') setOpen(false);
+    }
+
+    function onViewportChange() {
+      updateMenuPosition();
+    }
+
+    document.addEventListener('mousedown', onPointerDown, true);
+    document.addEventListener('touchstart', onPointerDown, true);
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onViewportChange);
+    window.addEventListener('scroll', onViewportChange, true);
+
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown, true);
+      document.removeEventListener('touchstart', onPointerDown, true);
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', onViewportChange);
+      window.removeEventListener('scroll', onViewportChange, true);
+    };
+  }, [open]);
+
+  const menu = open && menuPosition ? createPortal(
+    <div
+      className="select-menu floating-select-menu"
+      ref={menuRef}
+      style={{
+        top: `${menuPosition.top}px`,
+        left: `${menuPosition.left}px`,
+        width: `${menuPosition.width}px`,
+        maxHeight: `${menuPosition.maxHeight}px`,
+        right: 'auto',
+      }}
+    >
+      {options.map((option) => (
+        <button
+          className={`select-option ${option.value === value ? 'is-active' : ''}`}
+          key={option.value}
+          type="button"
+          onClick={() => {
+            onChange(option.value);
+            setOpen(false);
+          }}
+        >
+          <span>{option.label}</span>
+          {option.count !== undefined && <strong>{option.count}</strong>}
+        </button>
+      ))}
+    </div>,
+    document.body,
+  ) : null;
 
   return (
     <div className="custom-select" ref={ref}>
-      <button className={`select-trigger ${open ? 'is-open' : ''}`} type="button" onClick={() => setOpen((next) => !next)}>
+      <button
+        className={`select-trigger ${open ? 'is-open' : ''}`}
+        type="button"
+        onClick={() => {
+          if (!open) updateMenuPosition();
+          setOpen((next) => !next);
+        }}
+      >
         <Icon size={18} />
         <span className="select-trigger-text">{selected?.label || label}</span>
         <ChevronDown className={`select-chevron ${open ? 'is-open' : ''}`} size={18} />
       </button>
-      {open && (
-        <div className="select-menu">
-          {options.map((option) => (
-            <button
-              className={`select-option ${option.value === value ? 'is-active' : ''}`}
-              key={option.value}
-              type="button"
-              onClick={() => {
-                onChange(option.value);
-                setOpen(false);
-              }}
-            >
-              <span>{option.label}</span>
-              {option.count !== undefined && <strong>{option.count}</strong>}
-            </button>
-          ))}
-        </div>
-      )}
+      {menu}
     </div>
   );
 }

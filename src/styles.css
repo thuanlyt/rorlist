@@ -1092,3 +1092,18 @@ h1 {
 .style-custom-indicator:active::before {
   opacity: 1;
 }
+
+/* Patch: dropdown portal layer, không bị cắt bởi toolbar một hàng */
+.floating-select-menu {
+  position: fixed;
+  z-index: 9999;
+  right: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  animation: selectMenuIn .14s ease both;
+}
+
+@keyframes selectMenuIn {
+  from { opacity: 0; transform: translateY(4px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
