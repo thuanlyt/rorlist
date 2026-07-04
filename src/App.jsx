@@ -995,8 +995,18 @@ function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOp
         <p>{item.desc}</p>
       </div>
       <div className="card-actions">
-        <button className="icon-button" type="button" onClick={(event) => { event.stopPropagation(); onCopy(); }} aria-label="Copy tên">
-          {copied ? <Check size={18} /> : <Copy size={18} />}
+        <button
+          className={`icon-button ${used ? 'used-check-button' : ''}`}
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            if (used) onOpenDetails();
+            else onCopy();
+          }}
+          aria-label={used ? 'Tên đã dùng' : 'Copy tên'}
+          title={used ? 'Tên đã dùng' : 'Copy tên'}
+        >
+          {used ? <Check size={18} /> : copied ? <Check size={18} /> : <Copy size={18} />}
         </button>
         {admin && (
           <button className="icon-button" type="button" onClick={(event) => { event.stopPropagation(); onOpenClaim(); }} aria-label="Quản trị tên">

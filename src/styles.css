@@ -594,6 +594,17 @@ h1 {
 .owner-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .name-card p { margin-bottom: 0; color: var(--muted); font-size: 14px; }
 .name-card.is-famous .icon-button { border-color: rgba(var(--feng-rgb), .30); background: rgba(var(--feng-rgb), .08); color: var(--feng); }
+.icon-button.used-check-button {
+  border-color: rgba(34, 197, 94, .34);
+  background: rgba(34, 197, 94, .10);
+  color: #86efac;
+}
+.name-card.is-famous .icon-button.used-check-button {
+  border-color: rgba(34, 197, 94, .34);
+  background: rgba(34, 197, 94, .10);
+  color: #86efac;
+}
+
 .layout-compact .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .layout-compact .name-card { min-height: 108px; padding: 14px; }
 .layout-compact .name-card p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
