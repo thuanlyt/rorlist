@@ -184,6 +184,13 @@ function getDefaultStyle(item) {
 }
 
 function getVisualStyle(item, styles) {
+  if (item?.custom_color && item?.custom_element) {
+    return {
+      element: item.custom_element,
+      color: item.custom_color,
+      custom: true,
+    };
+  }
   const custom = styles[item.id];
   if (custom?.custom_color && custom?.custom_element) {
     return {
@@ -193,6 +200,18 @@ function getVisualStyle(item, styles) {
     };
   }
   return getDefaultStyle(item);
+}
+
+function makeFreeNameId(displayName, ownerName = '') {
+  const raw = `${displayName}-${ownerName}-${Date.now()}`.toLowerCase();
+  const slug = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 48);
+  return `free-${slug || Date.now()}`;
 }
 
 async function copyToClipboard(text) {
@@ -370,6 +389,7 @@ function App() {
   const [selectedGroup, setSelectedGroup] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [claims, setClaims] = useState({});
+  const [freeNames, setFreeNames] = useState({});
   const [nameStyles, setNameStyles] = useState({});
   const [settings, setSettings] = useState(FALLBACK_SETTINGS);
   const [admin, setAdmin] = useState(false);
@@ -409,9 +429,11 @@ function App() {
 
   function loadLocalData() {
     const localClaims = JSON.parse(localStorage.getItem('ror-local-claims') || '{}');
+    const localFreeNames = JSON.parse(localStorage.getItem('ror-local-free-names') || '{}');
     const localSettings = JSON.parse(localStorage.getItem('ror-local-settings') || 'null');
     const localStyles = JSON.parse(localStorage.getItem('ror-local-name-styles') || '{}');
     setClaims(localClaims);
+    setFreeNames(localFreeNames);
     setNameStyles(localStyles);
     if (localSettings) setSettings(localSettings);
   }
@@ -428,6 +450,21 @@ function App() {
       return;
     }
     setClaims(Object.fromEntries((data || []).map((claim) => [claim.name_id, claim])));
+    setSyncStatus('online');
+  }
+
+  async function fetchFreeNames() {
+    if (!supabase) {
+      loadLocalData();
+      return;
+    }
+    const { data, error } = await supabase.from('ror_free_names').select('*');
+    if (error) {
+      setSyncStatus('error');
+      setToast(`Không đọc được tên tự do: ${error.message}`);
+      return;
+    }
+    setFreeNames(Object.fromEntries((data || []).map((row) => [row.id, row])));
     setSyncStatus('online');
   }
 
@@ -472,7 +509,7 @@ function App() {
 
     async function boot() {
       setSyncStatus('connecting');
-      await Promise.all([fetchClaims(), fetchNameStyles(), fetchSettings()]);
+      await Promise.all([fetchClaims(), fetchFreeNames(), fetchNameStyles(), fetchSettings()]);
       if (mounted) setSyncStatus('online');
     }
 
@@ -481,6 +518,7 @@ function App() {
     const channel = supabase
       .channel('ror-name-registry-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ror_name_claims' }, () => fetchClaims())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ror_free_names' }, () => fetchFreeNames())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ror_name_styles' }, () => fetchNameStyles())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ror_ui_settings' }, () => fetchSettings())
       .subscribe((status) => {
@@ -499,14 +537,43 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  const groupOptions = useMemo(() => [
-    { value: 'all', label: 'Tất cả nhóm', count: groups.length },
-    ...groups.map((group) => ({ value: group.id, label: group.title, count: group.items.length })),
-  ], []);
+  const freeNameItems = useMemo(() => Object.values(freeNames)
+    .filter((row) => row?.display_name && row?.owner_name)
+    .map((row) => ({
+      id: row.id,
+      name: row.display_name,
+      desc: row.note || 'Tên tự do do thành viên tự đặt, không thuộc danh sách thần thoại cố định.',
+      origin: 'Tên tự do',
+      groupTitle: 'Tên tự do',
+      groupId: 'free-names',
+      isFreeName: true,
+      owner_name: row.owner_name,
+      identity_text: row.identity_text || '',
+      note: row.note || '',
+      updated_at: row.updated_at,
+      custom_element: row.custom_element || '',
+      custom_color: row.custom_color || '',
+    })), [freeNames]);
+
+  const allNamesCount = totalNames + freeNameItems.length;
+  const sourceUsedCount = Object.keys(claims).length;
+  const usedCount = sourceUsedCount + freeNameItems.length;
+  const freeCount = Math.max(totalNames - sourceUsedCount, 0);
+
+  const groupOptions = useMemo(() => {
+    const baseOptions = [
+      { value: 'all', label: 'Tất cả nhóm', count: groups.length + (freeNameItems.length ? 1 : 0) },
+      ...groups.map((group) => ({ value: group.id, label: group.title, count: group.items.length })),
+    ];
+    if (freeNameItems.length) {
+      baseOptions.push({ value: 'free-names', label: 'Tên tự do', count: freeNameItems.length });
+    }
+    return baseOptions;
+  }, [freeNameItems.length]);
 
   const filteredGroups = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    return groups
+    const sourceGroups = groups
       .filter((group) => selectedGroup === 'all' || group.id === selectedGroup)
       .map((group) => {
         const items = group.items.filter((item) => {
@@ -520,33 +587,58 @@ function App() {
         return { ...group, items };
       })
       .filter((group) => group.items.length > 0);
-  }, [claims, nameStyles, query, selectedGroup, statusFilter]);
+
+    const freeItems = freeNameItems.filter((item) => {
+      const statusOk = statusFilter === 'all' || statusFilter === 'used';
+      const groupOk = selectedGroup === 'all' || selectedGroup === 'free-names';
+      const haystack = `${item.name} ${item.desc} ${item.owner_name || ''} ${item.identity_text || ''} ${item.note || ''} ${item.custom_element || ''} ${item.custom_color || ''}`.toLowerCase();
+      return statusOk && groupOk && (!normalized || haystack.includes(normalized));
+    });
+
+    if (freeItems.length) {
+      sourceGroups.push({
+        id: 'free-names',
+        title: 'Tên tự do',
+        subtitle: 'Những tên do thành viên tự đặt, không thuộc danh sách thần thoại cố định.',
+        origin: 'Tên tự do',
+        items: freeItems,
+      });
+    }
+
+    return sourceGroups;
+  }, [claims, freeNameItems, nameStyles, query, selectedGroup, statusFilter]);
 
   const visibleCount = filteredGroups.reduce((sum, group) => sum + group.items.length, 0);
-  const usedCount = Object.keys(claims).length;
-  const freeCount = Math.max(totalNames - usedCount, 0);
-  const styledCount = allItems.filter((item) => getVisualStyle(item, nameStyles)).length;
+  const styledCount = [...allItems, ...freeNameItems].filter((item) => getVisualStyle(item, nameStyles)).length;
   const statusOptions = [
-    { value: 'all', label: 'Tất cả', count: totalNames },
+    { value: 'all', label: 'Tất cả', count: allNamesCount },
     { value: 'free', label: 'Còn trống', count: freeCount },
     { value: 'used', label: 'Đã dùng', count: usedCount },
   ];
 
   const itemById = useMemo(() => Object.fromEntries(allItems.map((item) => [item.id, item])), []);
 
-  const registeredRows = useMemo(() => Object.values(claims)
-    .filter((claim) => claim?.owner_name)
-    .map((claim) => {
-      const item = itemById[claim.name_id];
-      return {
-        id: claim.name_id,
-        oldName: claim.owner_name || '',
-        newName: item ? makeDisplayName(item.name) : claim.display_name || claim.name_id,
-        zalo: claim.identity_text || '',
-        note: claim.note || '',
-      };
-    })
-    .sort((a, b) => a.oldName.localeCompare(b.oldName, 'vi')), [claims, itemById]);
+  const registeredRows = useMemo(() => [
+    ...Object.values(claims)
+      .filter((claim) => claim?.owner_name)
+      .map((claim) => {
+        const item = itemById[claim.name_id];
+        return {
+          id: claim.name_id,
+          oldName: claim.owner_name || '',
+          newName: item ? makeDisplayName(item.name) : claim.display_name || claim.name_id,
+          zalo: claim.identity_text || '',
+          note: claim.note || '',
+        };
+      }),
+    ...freeNameItems.map((item) => ({
+      id: item.id,
+      oldName: item.owner_name || '',
+      newName: makeDisplayName(item.name),
+      zalo: item.identity_text || '',
+      note: item.note || '',
+    })),
+  ].sort((a, b) => a.oldName.localeCompare(b.oldName, 'vi')), [claims, freeNameItems, itemById]);
 
   function openModal(nextModal) {
     window.clearTimeout(closeTimerRef.current);
@@ -690,9 +782,82 @@ function App() {
     }
   }
 
+  async function saveFreeName(formPayload) {
+    setBusy(true);
+    try {
+      const displayName = formPayload.display_name.trim();
+      const owner = formPayload.owner_name.trim();
+      const customElement = formPayload.custom_element.trim();
+      const customColor = formPayload.custom_color.trim();
+      if (!displayName || !owner || !customElement || !isValidHex(customColor)) {
+        setToast('Vui lòng nhập đủ tên mới, tên cũ và màu/mệnh hợp lệ.');
+        return false;
+      }
+
+      const id = formPayload.id || makeFreeNameId(displayName, owner);
+      const row = {
+        id,
+        display_name: displayName,
+        group_title: 'Tên tự do',
+        owner_name: owner,
+        identity_text: formPayload.identity_text.trim(),
+        note: formPayload.note.trim(),
+        custom_element: customElement,
+        custom_color: customColor.toLowerCase(),
+        updated_at: new Date().toISOString(),
+      };
+
+      if (!supabase) {
+        const nextFreeNames = { ...freeNames, [id]: row };
+        setFreeNames(nextFreeNames);
+        localStorage.setItem('ror-local-free-names', JSON.stringify(nextFreeNames));
+      } else {
+        const { error } = await supabase.rpc('ror_upsert_free_name', {
+          p_admin_password: adminPassword,
+          p_id: formPayload.id || '',
+          p_display_name: displayName,
+          p_owner_name: owner,
+          p_identity_text: formPayload.identity_text.trim(),
+          p_note: formPayload.note.trim(),
+          p_custom_element: customElement,
+          p_custom_color: customColor.toLowerCase(),
+        });
+        if (error) throw error;
+        await fetchFreeNames();
+      }
+      setToast('Đã lưu tên tự do.');
+      closeModal();
+      return true;
+    } catch (error) {
+      setToast(`Không lưu tên tự do được: ${error.message}`);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function releaseClaim(nameId) {
     setBusy(true);
     try {
+      if (freeNames[nameId]) {
+        if (!supabase) {
+          const nextFreeNames = { ...freeNames };
+          delete nextFreeNames[nameId];
+          setFreeNames(nextFreeNames);
+          localStorage.setItem('ror-local-free-names', JSON.stringify(nextFreeNames));
+        } else {
+          const { error } = await supabase.rpc('ror_delete_free_name', {
+            p_admin_password: adminPassword,
+            p_id: nameId,
+          });
+          if (error) throw error;
+          await fetchFreeNames();
+        }
+        setToast('Đã xóa tên tự do.');
+        closeModal();
+        return;
+      }
+
       if (!supabase) {
         const nextClaims = { ...claims };
         delete nextClaims[nameId];
@@ -854,9 +1019,14 @@ function App() {
               <ShieldCheck size={18} /> Admin
             </button>
             {admin && (
-              <button className="soft-button" type="button" onClick={() => openModal({ type: 'effect' })}>
-                <SlidersHorizontal size={18} /> Effect
-              </button>
+              <>
+                <button className="soft-button" type="button" onClick={() => openModal({ type: 'freeName' })}>
+                  <UserPlus size={18} /> Tên tự do
+                </button>
+                <button className="soft-button" type="button" onClick={() => openModal({ type: 'effect' })}>
+                  <SlidersHorizontal size={18} /> Effect
+                </button>
+              </>
             )}
             <button className="soft-button" type="button" onClick={exportData}>
               <Download size={18} /> Export
@@ -874,8 +1044,8 @@ function App() {
           <p>Bộ sưu tập tên thần thoại, nhân vật huyền thoại và tên hội phong cách Ragnarok.</p>
           <div className="stats">
             <button className="pill nav-pill" type="button" onClick={() => navigateTo('/list')}>Xem tên đã đăng ký</button>
-            <span className="pill"><strong>{groups.length}</strong> nhóm</span>
-            <span className="pill"><strong>{totalNames}</strong> tên</span>
+            <span className="pill"><strong>{groups.length + (freeNameItems.length ? 1 : 0)}</strong> nhóm</span>
+            <span className="pill"><strong>{allNamesCount}</strong> tên</span>
             <span className="pill"><strong>{usedCount}</strong> đã dùng</span>
             <span className="pill"><strong>{freeCount}</strong> còn trống</span>
             <span className="pill"><strong>{styledCount}</strong> nổi bật</span>
@@ -896,7 +1066,7 @@ function App() {
 
         <section className="summary-row">
           <div className="summary-left">
-            <span className="pill">Đang hiển thị <strong>{visibleCount}</strong> / {totalNames}</span>
+            <span className="pill">Đang hiển thị <strong>{visibleCount}</strong> / {allNamesCount}</span>
             <span className="pill">Admin <strong>{admin ? 'Bật' : 'Tắt'}</strong></span>
           </div>
           <button className="ghost-button" type="button" onClick={() => { setQuery(''); setSelectedGroup('all'); setStatusFilter('all'); }}>
@@ -918,16 +1088,24 @@ function App() {
                 {group.items.map((item, index) => (
                   <NameCard
                     admin={admin}
-                    claim={claims[item.id]}
+                    claim={item.isFreeName ? {
+                      name_id: item.id,
+                      display_name: makeDisplayName(item.name),
+                      group_title: 'Tên tự do',
+                      owner_name: item.owner_name,
+                      identity_text: item.identity_text,
+                      note: item.note,
+                      updated_at: item.updated_at,
+                    } : claims[item.id]}
                     copied={copied === item.id}
                     index={index}
                     item={{ ...item, groupTitle: group.title }}
                     key={item.id}
                     onCopy={() => copyName(item)}
-                    onOpenClaim={() => openModal({ type: 'claim', item: { ...item, groupTitle: group.title } })}
+                    onOpenClaim={() => openModal({ type: item.isFreeName ? 'freeName' : 'claim', item: { ...item, groupTitle: group.title } })}
                     onOpenDetails={() => openModal({ type: 'details', item: { ...item, groupTitle: group.title } })}
                     settings={settings}
-                    styleOverride={nameStyles[item.id]}
+                    styleOverride={item.isFreeName ? { custom_element: item.custom_element, custom_color: item.custom_color, updated_at: item.updated_at } : nameStyles[item.id]}
                   />
                 ))}
               </div>
@@ -948,6 +1126,7 @@ function App() {
             setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
             requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('theme-switching')));
           }}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />} <span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button>
+          {admin && <button type="button" onClick={() => openModal({ type: 'freeName' })}><UserPlus size={18} /> <span>Tên tự do</span></button>}
           {admin && <button type="button" onClick={() => openModal({ type: 'effect' })}><SlidersHorizontal size={18} /> <span>Effect</span></button>}
           <button type="button" onClick={scrollToNextGroup}><ArrowDown size={18} /> <span>Next</span></button>
           <button type="button" onClick={scrollToTopAnimated}><ArrowUp size={18} /> <span>Top</span></button>
@@ -961,6 +1140,15 @@ function App() {
       {modal && (
         <ModalShell closing={modalClosing} onClose={closeModal}>
           {modal.type === 'login' && <LoginModal busy={busy} onClose={closeModal} onSubmit={handleAdminLogin} />}
+          {modal.type === 'freeName' && (
+            <FreeNameModal
+              busy={busy}
+              item={modal.item || null}
+              onClose={closeModal}
+              onDelete={modal.item ? () => releaseClaim(modal.item.id) : null}
+              onSave={saveFreeName}
+            />
+          )}
           {modal.type === 'claim' && (
             <ClaimModal
               busy={busy}
@@ -977,13 +1165,18 @@ function App() {
             <DetailsModal
               admin={admin}
               busy={busy}
-              claim={claims[modal.item.id]}
+              claim={modal.item.isFreeName ? {
+                owner_name: modal.item.owner_name,
+                identity_text: modal.item.identity_text,
+                note: modal.item.note,
+                updated_at: modal.item.updated_at,
+              } : claims[modal.item.id]}
               item={modal.item}
               onClose={closeModal}
-              onEdit={() => openModal({ type: 'claim', item: modal.item })}
+              onEdit={() => openModal({ type: modal.item.isFreeName ? 'freeName' : 'claim', item: modal.item })}
               onRelease={() => releaseClaim(modal.item.id)}
               visualStyle={getVisualStyle(modal.item, nameStyles)}
-              styleOverride={nameStyles[modal.item.id]}
+              styleOverride={modal.item.isFreeName ? { custom_element: modal.item.custom_element, custom_color: modal.item.custom_color, updated_at: modal.item.updated_at } : nameStyles[modal.item.id]}
             />
           )}
           {modal.type === 'effect' && <EffectModal busy={busy} settings={settings} onClose={closeModal} onSave={saveEffectSettings} />}
@@ -1042,7 +1235,9 @@ function RegisteredListPage({ rows, onHome }) {
 function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOpenDetails, settings, styleOverride }) {
   const visualStyle = styleOverride?.custom_color && styleOverride?.custom_element
     ? { element: styleOverride.custom_element, color: styleOverride.custom_color, custom: true }
-    : FAMOUS_NAMES[item.name];
+    : item.custom_color && item.custom_element
+      ? { element: item.custom_element, color: item.custom_color, custom: true }
+      : FAMOUS_NAMES[item.name];
   const rgb = visualStyle ? hexToRgb(visualStyle.color) : '45, 212, 191';
   const used = Boolean(claim?.owner_name);
   const effectType = normalizeEffectType(settings.effect_type);
@@ -1132,6 +1327,108 @@ function LoginModal({ busy, onClose, onSubmit }) {
         <div className="modal-actions-right">
           <button className="ghost-button" type="button" onClick={onClose}>Hủy</button>
           <button className="soft-button success" type="submit" disabled={busy}>{busy ? <Loader2 className="spin" size={17} /> : <LockKeyhole size={17} />} Đăng nhập</button>
+        </div>
+      </footer>
+    </form>
+  );
+}
+
+function FreeNameModal({ busy, item, onClose, onDelete, onSave }) {
+  const [displayName, setDisplayName] = useState(item?.name || '');
+  const [owner, setOwner] = useState(item?.owner_name || '');
+  const [identity, setIdentity] = useState(item?.identity_text || '');
+  const [note, setNote] = useState(item?.note || '');
+  const [element, setElement] = useState(item?.custom_element || 'Mộc');
+  const [customElement, setCustomElement] = useState(item?.custom_element && !ELEMENT_OPTIONS.some((option) => option.value === item.custom_element) ? item.custom_element : '');
+  const [color, setColor] = useState(item?.custom_color || FENG_COLORS.moc);
+  const selectedElement = element === 'Tùy chỉnh' ? customElement.trim() : element;
+  const canSave = displayName.trim() && owner.trim() && selectedElement && isValidHex(color);
+
+  function submit(event) {
+    event.preventDefault();
+    onSave({
+      id: item?.id || '',
+      display_name: displayName.trim(),
+      owner_name: owner.trim(),
+      identity_text: identity.trim(),
+      note: note.trim(),
+      custom_element: selectedElement,
+      custom_color: color,
+    });
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <ModalHeader title={item ? 'Sửa tên tự do' : 'Thêm tên tự do'} subtitle="Tên do thành viên tự đặt, không thuộc danh sách thần thoại cố định." onClose={onClose} />
+      <div className="modal-body">
+        <label className="field">
+          <span>Tên mới</span>
+          <input autoFocus value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Tên mới muốn hiển thị" />
+        </label>
+        <label className="field">
+          <span>Tên cũ</span>
+          <input value={owner} onChange={(event) => setOwner(event.target.value)} placeholder="Người đang sử dụng" />
+        </label>
+        <label className="field">
+          <span>Danh tính / liên hệ</span>
+          <input value={identity} onChange={(event) => setIdentity(event.target.value)} placeholder="Zalo, Discord, ID game, nhóm..." />
+        </label>
+        <label className="field">
+          <span>Ghi chú</span>
+          <textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Ghi chú quản trị" />
+        </label>
+        <label className="field">
+          <span>Thuộc nhóm</span>
+          <input value="Tên tự do" disabled />
+        </label>
+
+        <div className="field-grid two-columns">
+          <label className="field">
+            <span>Mệnh</span>
+            <select value={element} onChange={(event) => setElement(event.target.value)}>
+              {ELEMENT_OPTIONS.filter((option) => option.value).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+          <label className="field">
+            <span>HEX</span>
+            <input value={color} onChange={(event) => setColor(event.target.value)} placeholder="#15803d" />
+          </label>
+        </div>
+        {element === 'Tùy chỉnh' && (
+          <label className="field">
+            <span>Tên mệnh tùy chỉnh</span>
+            <input value={customElement} onChange={(event) => setCustomElement(event.target.value)} placeholder="Ví dụ: Lôi, Băng, Hỗn Mang..." />
+          </label>
+        )}
+        <label className="field">
+          <span>Màu</span>
+          <input className="color-input" type="color" value={isValidHex(color) ? color : FENG_COLORS.moc} onChange={(event) => setColor(event.target.value)} />
+        </label>
+
+        <article className="name-card preview-card is-famous effect-sweep" style={{ '--feng': isValidHex(color) ? color : FENG_COLORS.moc, '--feng-rgb': hexToRgb(isValidHex(color) ? color : FENG_COLORS.moc) }}>
+          <span className="effect-layer" aria-hidden="true" />
+          <div className="name-body">
+            <div className="tag-row">
+              <span className="name-origin feng-tag">Tên tự do</span>
+              {selectedElement && <span className="name-origin feng-tag">Mệnh {selectedElement}</span>}
+              <span className="name-origin used-tag">Đã dùng</span>
+            </div>
+            <h3><span>{makeDisplayName(displayName || 'Tên mới')}</span>{owner && <span className="owner-inline">(<UserRoundCheck size={12} /><span className="owner-name">{shortOwner(owner)}</span>)</span>}</h3>
+            <p>{note || 'Tên tự do do thành viên tự đặt.'}</p>
+          </div>
+        </article>
+      </div>
+      <footer className="modal-actions">
+        <div className="modal-actions-left">
+          {item && onDelete && (
+            <button className="ghost-button danger" type="button" onClick={onDelete} disabled={busy}>
+              <Trash2 size={17} /> Xóa tên
+            </button>
+          )}
+        </div>
+        <div className="modal-actions-right">
+          <button className="ghost-button" type="button" onClick={onClose}>Hủy</button>
+          <button className="soft-button success" type="submit" disabled={busy || !canSave}>{busy ? <Loader2 className="spin" size={17} /> : <Save size={17} />} Lưu</button>
         </div>
       </footer>
     </form>

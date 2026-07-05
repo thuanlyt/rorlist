@@ -9,6 +9,7 @@ Web quản lý kho tên phong cách **Record of Ragnarok / thần thoại / hộ
 - Tìm kiếm theo tên, nhóm, người sử dụng, liên hệ hoặc ghi chú.
 - Lọc theo trạng thái: tất cả, còn trống, đã dùng.
 - Chế độ Admin để gán tên cho người dùng trong game.
+- Chế độ Admin có thể thêm **Tên tự do** cho thành viên không đặt theo danh sách tên có sẵn.
 - Modal xem đầy đủ thông tin người đang sử dụng tên.
 - Tùy chỉnh màu và mệnh cho từng tên.
 - Màu/mệnh custom trên Supabase sẽ đè lên màu/mệnh mặc định trong source.
@@ -30,12 +31,27 @@ Mapping dữ liệu:
 
 ```text
 Tên cũ   = Người đang sử dụng
-Tên mới  = Tên thần tương ứng
+Tên mới  = Tên thần tương ứng hoặc tên tự do do thành viên tự đặt
 Tên Zalo = Danh tính / liên hệ
 Ghi chú  = Ghi chú
 ```
 
 Ở mọi trang, bấm vào icon hoặc chữ **Record of Ragnarok** trên header sẽ quay về trang chủ `/`.
+
+## Tên tự do
+
+**Tên tự do** dùng cho thành viên không đặt theo danh sách tên thần thoại/RoR có sẵn.
+
+Admin có thể thêm tên tự do với các trường:
+
+- Tên mới: tên sẽ hiển thị như tên thần.
+- Tên cũ: người đang sử dụng tên đó.
+- Danh tính / liên hệ: Zalo, Discord, ID game hoặc ghi chú liên hệ.
+- Ghi chú: thông tin quản trị bổ sung.
+- Màu / mệnh: màu và mệnh hiển thị trên card.
+- Nhóm: luôn là `Tên tự do`.
+
+Tên tự do luôn được tính là **Đã dùng**, xuất hiện trên trang chủ trong nhóm **Tên tự do** và cũng xuất hiện trong bảng `/list`.
 
 ## Biến môi trường
 
@@ -63,7 +79,8 @@ Các bảng chính:
 - `ror_admin_settings`: lưu hash mật khẩu admin.
 - `ror_name_claims`: lưu tên đã được sử dụng và thông tin người dùng.
 - `ror_ui_settings`: lưu hiệu ứng giao diện.
-- `ror_name_styles`: lưu màu/mệnh custom từng tên.
+- `ror_name_styles`: lưu màu/mệnh custom từng tên có sẵn.
+- `ror_free_names`: lưu tên tự do do Admin thêm, gồm tên mới, tên cũ, liên hệ, ghi chú và màu/mệnh.
 
 Các RPC chính:
 
@@ -73,6 +90,8 @@ Các RPC chính:
 - `ror_update_ui_settings`
 - `ror_upsert_name_style`
 - `ror_delete_name_style`
+- `ror_upsert_free_name`
+- `ror_delete_free_name`
 
 ## Chạy local
 

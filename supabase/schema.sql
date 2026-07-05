@@ -47,6 +47,19 @@ create table if not exists public.ror_name_styles (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.ror_free_names (
+  id text primary key,
+  display_name text not null,
+  group_title text not null default 'Tên tự do',
+  owner_name text not null,
+  identity_text text not null default '',
+  note text not null default '',
+  custom_element text not null,
+  custom_color text not null check (custom_color ~ '^#[0-9A-Fa-f]{6}$'),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 insert into public.ror_ui_settings (id, effect_type, effect_duration, effect_intensity, updated_at)
 values ('global', 'sweep', 1.7, 0.78, now())
 on conflict (id) do nothing;
@@ -55,10 +68,12 @@ alter table public.ror_admin_settings enable row level security;
 alter table public.ror_name_claims enable row level security;
 alter table public.ror_ui_settings enable row level security;
 alter table public.ror_name_styles enable row level security;
+alter table public.ror_free_names enable row level security;
 
 alter table public.ror_name_claims replica identity full;
 alter table public.ror_ui_settings replica identity full;
 alter table public.ror_name_styles replica identity full;
+alter table public.ror_free_names replica identity full;
 
 drop policy if exists "Public read name claims" on public.ror_name_claims;
 create policy "Public read name claims"
@@ -77,6 +92,13 @@ using (true);
 drop policy if exists "Public read name styles" on public.ror_name_styles;
 create policy "Public read name styles"
 on public.ror_name_styles
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Public read free names" on public.ror_free_names;
+create policy "Public read free names"
+on public.ror_free_names
 for select
 to anon, authenticated
 using (true);
@@ -278,12 +300,97 @@ begin
 end;
 $$;
 
+
+create or replace function public.ror_upsert_free_name(
+  p_admin_password text,
+  p_id text,
+  p_display_name text,
+  p_owner_name text,
+  p_identity_text text default '',
+  p_note text default '',
+  p_custom_element text default 'Mộc',
+  p_custom_color text default '#15803d'
+)
+returns public.ror_free_names
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+declare
+  result public.ror_free_names;
+  final_id text;
+begin
+  if not public.ror_admin_check(p_admin_password) then
+    raise exception 'Invalid admin password' using errcode = '28000';
+  end if;
+
+  if nullif(trim(p_display_name), '') is null
+     or nullif(trim(p_owner_name), '') is null
+     or nullif(trim(p_custom_element), '') is null
+     or p_custom_color !~ '^#[0-9A-Fa-f]{6}$' then
+    raise exception 'Invalid free name payload' using errcode = '22023';
+  end if;
+
+  final_id := nullif(trim(coalesce(p_id, '')), '');
+  if final_id is null then
+    final_id := 'free-' || substr(md5(lower(trim(p_display_name)) || '-' || lower(trim(p_owner_name)) || '-' || extract(epoch from clock_timestamp())::text), 1, 20);
+  end if;
+
+  insert into public.ror_free_names (
+    id, display_name, group_title, owner_name, identity_text, note, custom_element, custom_color, updated_at
+  ) values (
+    final_id,
+    trim(p_display_name),
+    'Tên tự do',
+    trim(p_owner_name),
+    coalesce(p_identity_text, ''),
+    coalesce(p_note, ''),
+    trim(p_custom_element),
+    lower(p_custom_color),
+    now()
+  )
+  on conflict (id) do update
+  set display_name = excluded.display_name,
+      group_title = 'Tên tự do',
+      owner_name = excluded.owner_name,
+      identity_text = excluded.identity_text,
+      note = excluded.note,
+      custom_element = excluded.custom_element,
+      custom_color = excluded.custom_color,
+      updated_at = now()
+  returning * into result;
+
+  return result;
+end;
+$$;
+
+create or replace function public.ror_delete_free_name(
+  p_admin_password text,
+  p_id text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public, extensions
+as $$
+begin
+  if not public.ror_admin_check(p_admin_password) then
+    raise exception 'Invalid admin password' using errcode = '28000';
+  end if;
+
+  delete from public.ror_free_names
+  where id = p_id;
+end;
+$$;
+
 revoke all on function public.ror_admin_check(text) from public;
 revoke all on function public.ror_upsert_name_claim(text, text, text, text, text, text, text) from public;
 revoke all on function public.ror_delete_name_claim(text, text) from public;
 revoke all on function public.ror_update_ui_settings(text, text, numeric, numeric) from public;
 revoke all on function public.ror_upsert_name_style(text, text, text, text, text, text) from public;
 revoke all on function public.ror_delete_name_style(text, text) from public;
+revoke all on function public.ror_upsert_free_name(text, text, text, text, text, text, text, text) from public;
+revoke all on function public.ror_delete_free_name(text, text) from public;
 
 grant execute on function public.ror_admin_check(text) to anon, authenticated;
 grant execute on function public.ror_upsert_name_claim(text, text, text, text, text, text, text) to anon, authenticated;
@@ -291,6 +398,8 @@ grant execute on function public.ror_delete_name_claim(text, text) to anon, auth
 grant execute on function public.ror_update_ui_settings(text, text, numeric, numeric) to anon, authenticated;
 grant execute on function public.ror_upsert_name_style(text, text, text, text, text, text) to anon, authenticated;
 grant execute on function public.ror_delete_name_style(text, text) to anon, authenticated;
+grant execute on function public.ror_upsert_free_name(text, text, text, text, text, text, text, text) to anon, authenticated;
+grant execute on function public.ror_delete_free_name(text, text) to anon, authenticated;
 
 do $$
 begin
@@ -311,6 +420,14 @@ end $$;
 do $$
 begin
   alter publication supabase_realtime add table public.ror_name_styles;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.ror_free_names;
 exception
   when duplicate_object then null;
   when undefined_object then null;
