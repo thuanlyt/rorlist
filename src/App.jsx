@@ -795,7 +795,8 @@ function App() {
       const owner = formPayload.owner_name.trim();
       const customElement = formPayload.custom_element.trim();
       const customColor = formPayload.custom_color.trim();
-      if (!displayName || !owner || !customElement || !isValidHex(customColor)) {
+      const hasCustomStyle = Boolean(customElement || customColor);
+      if (!displayName || !owner || (hasCustomStyle && (!customElement || !isValidHex(customColor)))) {
         setToast('Vui lòng nhập đủ tên mới, tên cũ và màu/mệnh hợp lệ.');
         return false;
       }
@@ -808,8 +809,8 @@ function App() {
         owner_name: owner,
         identity_text: formPayload.identity_text.trim(),
         note: formPayload.note.trim(),
-        custom_element: customElement,
-        custom_color: customColor.toLowerCase(),
+        custom_element: hasCustomStyle ? customElement : '',
+        custom_color: hasCustomStyle ? customColor.toLowerCase() : '',
         updated_at: new Date().toISOString(),
       };
 
@@ -825,13 +826,13 @@ function App() {
           p_owner_name: owner,
           p_identity_text: formPayload.identity_text.trim(),
           p_note: formPayload.note.trim(),
-          p_custom_element: customElement,
-          p_custom_color: customColor.toLowerCase(),
+          p_custom_element: hasCustomStyle ? customElement : '',
+          p_custom_color: hasCustomStyle ? customColor.toLowerCase() : '',
         });
         if (error) throw error;
         await fetchFreeNames();
       }
-      setToast('Đã lưu tên tự do.');
+      setToast(hasCustomStyle ? 'Đã lưu tên tự do.' : 'Đã lưu tên tự do và xóa màu.');
       closeModal();
       return true;
     } catch (error) {
@@ -1207,15 +1208,21 @@ function App() {
 
 function RegisteredListPage({ admin, rows, onEditRow, onHome }) {
   const [search, setSearch] = useState('');
-  const [filterField, setFilterField] = useState('all');
+  const [filterFields, setFilterFields] = useState(['oldName', 'newName', 'zalo', 'note']);
+  const [groupMode, setGroupMode] = useState('note');
   const [sortOrder, setSortOrder] = useState('asc');
 
-  const filterOptions = [
-    { value: 'all', label: 'Tất cả cột' },
-    { value: 'oldName', label: 'Lọc theo tên cũ' },
-    { value: 'newName', label: 'Lọc theo tên mới' },
-    { value: 'zalo', label: 'Lọc theo tên Zalo' },
-    { value: 'note', label: 'Lọc theo ghi chú' },
+  const fieldOptions = [
+    { value: 'oldName', label: 'Tên cũ' },
+    { value: 'newName', label: 'Tên mới' },
+    { value: 'zalo', label: 'Tên Zalo' },
+    { value: 'note', label: 'Ghi chú' },
+  ];
+
+  const groupOptions = [
+    { value: 'note', label: 'Nhóm theo ghi chú' },
+    { value: 'type', label: 'Nhóm theo loại tên' },
+    { value: 'none', label: 'Không nhóm' },
   ];
 
   const sortOptions = [
@@ -1223,26 +1230,84 @@ function RegisteredListPage({ admin, rows, onEditRow, onHome }) {
     { value: 'desc', label: 'Z-A' },
   ];
 
+  function toggleFilterField(field) {
+    setFilterFields((current) => {
+      if (current.includes(field)) return current.filter((item) => item !== field);
+      return [...current, field];
+    });
+  }
+
   const filteredRows = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    const sortKey = filterField === 'all' ? 'oldName' : filterField;
+    const activeFields = filterFields.length ? filterFields : fieldOptions.map((option) => option.value);
+    const sortKey = activeFields[0] || 'oldName';
 
     return rows
       .filter((row) => {
         if (!keyword) return true;
-        if (filterField !== 'all') return String(row[filterField] || '').toLowerCase().includes(keyword);
-        return `${row.oldName} ${row.newName} ${row.zalo} ${row.note}`.toLowerCase().includes(keyword);
+        return activeFields.some((field) => String(row[field] || '').toLowerCase().includes(keyword));
       })
       .sort((a, b) => {
         const direction = sortOrder === 'asc' ? 1 : -1;
-        return String(a[sortKey] || '').localeCompare(String(b[sortKey] || ''), 'vi') * direction;
+        const primary = String(a[sortKey] || '').localeCompare(String(b[sortKey] || ''), 'vi') * direction;
+        if (primary !== 0) return primary;
+        return String(a.oldName || '').localeCompare(String(b.oldName || ''), 'vi');
       });
-  }, [filterField, rows, search, sortOrder]);
+  }, [filterFields, rows, search, sortOrder]);
 
-  const sourceRows = filteredRows.filter((row) => row.type === 'source');
-  const freeRows = filteredRows.filter((row) => row.type === 'free');
   const totalSourceRows = rows.filter((row) => row.type === 'source').length;
   const totalFreeRows = rows.filter((row) => row.type === 'free').length;
+
+  const groupedRows = useMemo(() => {
+    if (groupMode === 'type') {
+      return [
+        {
+          key: 'source',
+          title: 'Tên theo danh sách',
+          subtitle: 'Tên thần thoại / Record of Ragnarok đã có trong danh sách gốc.',
+          rows: filteredRows.filter((row) => row.type === 'source'),
+        },
+        {
+          key: 'free',
+          title: 'Tên tự do',
+          subtitle: 'Tên do thành viên tự đặt, không thuộc danh sách gốc.',
+          rows: filteredRows.filter((row) => row.type === 'free'),
+        },
+      ];
+    }
+
+    if (groupMode === 'none') {
+      return [{
+        key: 'all',
+        title: 'Tất cả tên đã đăng ký',
+        subtitle: 'Danh sách tổng hợp không tách nhóm.',
+        rows: filteredRows,
+      }];
+    }
+
+    const map = new Map();
+    filteredRows.forEach((row) => {
+      const noteKey = row.note?.trim() || 'Chưa có ghi chú';
+      if (!map.has(noteKey)) map.set(noteKey, []);
+      map.get(noteKey).push(row);
+    });
+
+    return [...map.entries()]
+      .sort(([a], [b]) => String(a).localeCompare(String(b), 'vi') * (sortOrder === 'asc' ? 1 : -1))
+      .map(([note, sectionRows]) => ({
+        key: `note-${note}`,
+        title: note,
+        subtitle: 'Nhóm theo ghi chú quản trị.',
+        rows: sectionRows,
+      }));
+  }, [filteredRows, groupMode, sortOrder]);
+
+  function resetFilters() {
+    setSearch('');
+    setFilterFields(['oldName', 'newName', 'zalo', 'note']);
+    setGroupMode('note');
+    setSortOrder('asc');
+  }
 
   function renderTable(sectionRows, emptyText) {
     return (
@@ -1285,7 +1350,7 @@ function RegisteredListPage({ admin, rows, onEditRow, onHome }) {
       <div className="list-hero">
         <span className="eyebrow"><List size={16} /> Danh sách đăng ký</span>
         <h1>Tên đã đăng ký</h1>
-        <p>Bảng xem nhanh thành viên đã đăng ký tên. Admin có thể bấm vào từng dòng để xem và chỉnh sửa thông tin.</p>
+        <p>Bảng xem nhanh thành viên đã đăng ký tên. Mặc định nhóm theo ghi chú để dễ quan sát các nhóm nhập liệu giống nhau.</p>
         <div className="stats list-stats">
           <span className="pill"><strong>{rows.length}</strong> tổng</span>
           <span className="pill"><strong>{totalSourceRows}</strong> theo danh sách</span>
@@ -1294,15 +1359,27 @@ function RegisteredListPage({ admin, rows, onEditRow, onHome }) {
         </div>
       </div>
 
-      <section className="list-filterbar" aria-label="Bộ lọc danh sách đã đăng ký">
+      <section className="list-filterbar list-filterbar-multi" aria-label="Bộ lọc danh sách đã đăng ký">
         <label className="search-box list-search-box">
           <Search size={18} />
           <input value={search} onChange={(event) => setSearch(event.target.value)} type="text" placeholder="Tìm trong bảng..." />
           {search && <button className="clear-button" type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><X size={16} /></button>}
         </label>
-        <SelectBox icon={Filter} label="Cột lọc" options={filterOptions} value={filterField} onChange={setFilterField} />
+        <div className="field-filter-chips" role="group" aria-label="Chọn cột lọc">
+          {fieldOptions.map((option) => (
+            <button
+              className={filterFields.includes(option.value) ? 'filter-chip is-active' : 'filter-chip'}
+              key={option.value}
+              type="button"
+              onClick={() => toggleFilterField(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <SelectBox icon={Filter} label="Nhóm" options={groupOptions} value={groupMode} onChange={setGroupMode} />
         <SelectBox icon={ArrowDown} label="Sắp xếp" options={sortOptions} value={sortOrder} onChange={setSortOrder} />
-        <button className="ghost-button list-reset-button" type="button" onClick={() => { setSearch(''); setFilterField('all'); setSortOrder('asc'); }}>
+        <button className="ghost-button list-reset-button" type="button" onClick={resetFilters}>
           <RotateCcw size={17} /> Reset
         </button>
       </section>
@@ -1310,25 +1387,22 @@ function RegisteredListPage({ admin, rows, onEditRow, onHome }) {
       {!filteredRows.length ? (
         <div className="empty-state list-empty-state">
           <h2>Không tìm thấy dữ liệu phù hợp</h2>
-          <button type="button" onClick={() => { setSearch(''); setFilterField('all'); setSortOrder('asc'); }}>Xóa lọc</button>
+          <button type="button" onClick={resetFilters}>Xóa lọc</button>
         </div>
       ) : (
         <div className="registered-sections">
-          <section className="registered-section">
-            <header className="registered-section-header">
-              <h2>Tên theo danh sách</h2>
-              <span className="pill origin-pill">{sourceRows.length} tên</span>
-            </header>
-            {renderTable(sourceRows, 'Không có tên theo danh sách phù hợp.')}
-          </section>
-
-          <section className="registered-section">
-            <header className="registered-section-header">
-              <h2>Tên tự do</h2>
-              <span className="pill origin-pill">{freeRows.length} tên</span>
-            </header>
-            {renderTable(freeRows, 'Không có tên tự do phù hợp.')}
-          </section>
+          {groupedRows.map((section) => (
+            <section className="registered-section" key={section.key}>
+              <header className="registered-section-header">
+                <div>
+                  <h2>{section.title}</h2>
+                  <p>{section.subtitle}</p>
+                </div>
+                <span className="pill origin-pill">{section.rows.length} tên</span>
+              </header>
+              {renderTable(section.rows, 'Không có dữ liệu phù hợp.')}
+            </section>
+          ))}
         </div>
       )}
 
@@ -1444,15 +1518,18 @@ function LoginModal({ busy, onClose, onSubmit }) {
 }
 
 function FreeNameModal({ busy, item, onClose, onDelete, onSave }) {
+  const hasInitialStyle = Boolean(item?.custom_element && item?.custom_color);
   const [displayName, setDisplayName] = useState(item?.name || '');
   const [owner, setOwner] = useState(item?.owner_name || '');
   const [identity, setIdentity] = useState(item?.identity_text || '');
   const [note, setNote] = useState(item?.note || '');
+  const [styleEnabled, setStyleEnabled] = useState(item ? hasInitialStyle : true);
   const [element, setElement] = useState(item?.custom_element || 'Mộc');
   const [customElement, setCustomElement] = useState(item?.custom_element && !ELEMENT_OPTIONS.some((option) => option.value === item.custom_element) ? item.custom_element : '');
   const [color, setColor] = useState(item?.custom_color || FENG_COLORS.moc);
-  const selectedElement = element === 'Tùy chỉnh' ? customElement.trim() : element;
-  const canSave = displayName.trim() && owner.trim() && selectedElement && isValidHex(color);
+  const selectedElement = styleEnabled ? (element === 'Tùy chỉnh' ? customElement.trim() : element) : '';
+  const canSave = displayName.trim() && owner.trim() && (!styleEnabled || (selectedElement && isValidHex(color)));
+  const previewColor = styleEnabled && isValidHex(color) ? color : FENG_COLORS.moc;
 
   function submit(event) {
     event.preventDefault();
@@ -1462,9 +1539,16 @@ function FreeNameModal({ busy, item, onClose, onDelete, onSave }) {
       owner_name: owner.trim(),
       identity_text: identity.trim(),
       note: note.trim(),
-      custom_element: selectedElement,
-      custom_color: color,
+      custom_element: styleEnabled ? selectedElement : '',
+      custom_color: styleEnabled ? color : '',
     });
+  }
+
+  function clearColor() {
+    setStyleEnabled(false);
+    setElement('');
+    setCustomElement('');
+    setColor('');
   }
 
   return (
@@ -1492,19 +1576,28 @@ function FreeNameModal({ busy, item, onClose, onDelete, onSave }) {
           <input value="Tên tự do" disabled />
         </label>
 
+        <div className="style-toolbar">
+          <button className={styleEnabled ? 'filter-chip is-active' : 'filter-chip'} type="button" onClick={() => setStyleEnabled(true)}>
+            Bật màu / mệnh
+          </button>
+          <button className="filter-chip danger-chip" type="button" onClick={clearColor} disabled={!styleEnabled && !hasInitialStyle}>
+            <Trash2 size={13} /> Xóa màu
+          </button>
+        </div>
+
         <div className="field-grid two-columns">
           <label className="field">
             <span>Mệnh</span>
-            <select value={element} onChange={(event) => setElement(event.target.value)}>
+            <select value={element} disabled={!styleEnabled} onChange={(event) => setElement(event.target.value)}>
               {ELEMENT_OPTIONS.filter((option) => option.value).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </label>
           <label className="field">
             <span>HEX</span>
-            <input value={color} onChange={(event) => setColor(event.target.value)} placeholder="#15803d" />
+            <input value={color} disabled={!styleEnabled} onChange={(event) => setColor(event.target.value)} placeholder="#15803d" />
           </label>
         </div>
-        {element === 'Tùy chỉnh' && (
+        {styleEnabled && element === 'Tùy chỉnh' && (
           <label className="field">
             <span>Tên mệnh tùy chỉnh</span>
             <input value={customElement} onChange={(event) => setCustomElement(event.target.value)} placeholder="Ví dụ: Lôi, Băng, Hỗn Mang..." />
@@ -1512,15 +1605,15 @@ function FreeNameModal({ busy, item, onClose, onDelete, onSave }) {
         )}
         <label className="field">
           <span>Màu</span>
-          <input className="color-input" type="color" value={isValidHex(color) ? color : FENG_COLORS.moc} onChange={(event) => setColor(event.target.value)} />
+          <input className="color-input" type="color" value={previewColor} disabled={!styleEnabled} onChange={(event) => setColor(event.target.value)} />
         </label>
 
-        <article className="name-card preview-card is-famous effect-sweep" style={{ '--feng': isValidHex(color) ? color : FENG_COLORS.moc, '--feng-rgb': hexToRgb(isValidHex(color) ? color : FENG_COLORS.moc) }}>
-          <span className="effect-layer" aria-hidden="true" />
+        <article className={`name-card preview-card ${styleEnabled ? 'is-famous effect-sweep' : ''}`} style={{ '--feng': previewColor, '--feng-rgb': hexToRgb(previewColor) }}>
+          {styleEnabled && <span className="effect-layer" aria-hidden="true" />}
           <div className="name-body">
             <div className="tag-row">
-              <span className="name-origin feng-tag">Tên tự do</span>
-              {selectedElement && <span className="name-origin feng-tag">Mệnh {selectedElement}</span>}
+              <span className={styleEnabled ? 'name-origin feng-tag' : 'name-origin'}>Tên tự do</span>
+              {styleEnabled && selectedElement && <span className="name-origin feng-tag">Mệnh {selectedElement}</span>}
               <span className="name-origin used-tag">Đã dùng</span>
             </div>
             <h3><span>{makeDisplayName(displayName || 'Tên mới')}</span>{owner && <span className="owner-inline">(<UserRoundCheck size={12} /><span className="owner-name">{shortOwner(owner)}</span>)</span>}</h3>
@@ -1544,6 +1637,7 @@ function FreeNameModal({ busy, item, onClose, onDelete, onSave }) {
     </form>
   );
 }
+
 
 function ClaimModal({ busy, claim, defaultStyle, item, onClose, onRelease, onSave, styleOverride }) {
   const [owner, setOwner] = useState(claim?.owner_name || '');
@@ -1646,6 +1740,20 @@ function ClaimModal({ busy, claim, defaultStyle, item, onClose, onRelease, onSav
           <button className="ghost-button" type="button" onClick={resetDefault} disabled={busy}>
             <RefreshCw size={17} /> Mặc định
           </button>
+          {styleOverride?.custom_color && (
+            <button
+              className="ghost-button danger"
+              type="button"
+              disabled={busy}
+              onClick={() => onSave(item, {
+                owner_name: owner.trim(),
+                identity_text: identity.trim(),
+                note: note.trim(),
+              }, { custom_element: '', custom_color: '' })}
+            >
+              <Trash2 size={17} /> Xóa màu
+            </button>
+          )}
         </div>
         <div className="modal-actions-right">
           <button className="ghost-button" type="button" onClick={onClose}>Hủy</button>

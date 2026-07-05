@@ -54,11 +54,15 @@ create table if not exists public.ror_free_names (
   owner_name text not null,
   identity_text text not null default '',
   note text not null default '',
-  custom_element text not null,
-  custom_color text not null check (custom_color ~ '^#[0-9A-Fa-f]{6}$'),
+  custom_element text,
+  custom_color text check (custom_color ~ '^#[0-9A-Fa-f]{6}$'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table if exists public.ror_free_names
+  alter column custom_element drop not null,
+  alter column custom_color drop not null;
 
 insert into public.ror_ui_settings (id, effect_type, effect_duration, effect_intensity, updated_at)
 values ('global', 'sweep', 1.7, 0.78, now())
@@ -308,8 +312,8 @@ create or replace function public.ror_upsert_free_name(
   p_owner_name text,
   p_identity_text text default '',
   p_note text default '',
-  p_custom_element text default 'Mộc',
-  p_custom_color text default '#15803d'
+  p_custom_element text default '',
+  p_custom_color text default ''
 )
 returns public.ror_free_names
 language plpgsql
@@ -319,15 +323,20 @@ as $$
 declare
   result public.ror_free_names;
   final_id text;
+  final_element text;
+  final_color text;
 begin
   if not public.ror_admin_check(p_admin_password) then
     raise exception 'Invalid admin password' using errcode = '28000';
   end if;
 
+  final_element := nullif(trim(coalesce(p_custom_element, '')), '');
+  final_color := nullif(lower(trim(coalesce(p_custom_color, ''))), '');
+
   if nullif(trim(p_display_name), '') is null
      or nullif(trim(p_owner_name), '') is null
-     or nullif(trim(p_custom_element), '') is null
-     or p_custom_color !~ '^#[0-9A-Fa-f]{6}$' then
+     or ((final_element is null) <> (final_color is null))
+     or (final_color is not null and final_color !~ '^#[0-9A-Fa-f]{6}$') then
     raise exception 'Invalid free name payload' using errcode = '22023';
   end if;
 
@@ -345,8 +354,8 @@ begin
     trim(p_owner_name),
     coalesce(p_identity_text, ''),
     coalesce(p_note, ''),
-    trim(p_custom_element),
-    lower(p_custom_color),
+    final_element,
+    final_color,
     now()
   )
   on conflict (id) do update
