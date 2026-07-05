@@ -625,18 +625,24 @@ function App() {
         const item = itemById[claim.name_id];
         return {
           id: claim.name_id,
+          type: 'source',
+          groupLabel: 'Tên theo danh sách',
           oldName: claim.owner_name || '',
           newName: item ? makeDisplayName(item.name) : claim.display_name || claim.name_id,
           zalo: claim.identity_text || '',
           note: claim.note || '',
+          item: item ? { ...item, groupTitle: item.groupTitle } : null,
         };
       }),
     ...freeNameItems.map((item) => ({
       id: item.id,
+      type: 'free',
+      groupLabel: 'Tên tự do',
       oldName: item.owner_name || '',
       newName: makeDisplayName(item.name),
       zalo: item.identity_text || '',
       note: item.note || '',
+      item,
     })),
   ].sort((a, b) => a.oldName.localeCompare(b.oldName, 'vi')), [claims, freeNameItems, itemById]);
 
@@ -1035,7 +1041,19 @@ function App() {
         </header>
 
         {path === '/list' ? (
-          <RegisteredListPage rows={registeredRows} onHome={() => navigateTo('/')} />
+          <RegisteredListPage
+            admin={admin}
+            rows={registeredRows}
+            onHome={() => navigateTo('/')}
+            onEditRow={(row) => {
+              if (!admin) return;
+              if (row.type === 'free') {
+                openModal({ type: 'freeName', item: row.item });
+                return;
+              }
+              if (row.item) openModal({ type: 'claim', item: row.item });
+            }}
+          />
         ) : (
           <>
         <section className="hero-panel">
@@ -1187,15 +1205,47 @@ function App() {
 }
 
 
-function RegisteredListPage({ rows, onHome }) {
-  return (
-    <section className="list-page" id="top">
-      <div className="list-hero">
-        <span className="eyebrow"><List size={16} /> Danh sách đăng ký</span>
-        <h1>Tên đã đăng ký</h1>
-        <p>Bảng xem nhanh những thành viên đã đăng ký tên trong hội.</p>
-      </div>
+function RegisteredListPage({ admin, rows, onEditRow, onHome }) {
+  const [search, setSearch] = useState('');
+  const [filterField, setFilterField] = useState('all');
+  const [sortOrder, setSortOrder] = useState('asc');
 
+  const filterOptions = [
+    { value: 'all', label: 'Tất cả cột' },
+    { value: 'oldName', label: 'Lọc theo tên cũ' },
+    { value: 'newName', label: 'Lọc theo tên mới' },
+    { value: 'zalo', label: 'Lọc theo tên Zalo' },
+    { value: 'note', label: 'Lọc theo ghi chú' },
+  ];
+
+  const sortOptions = [
+    { value: 'asc', label: 'A-Z' },
+    { value: 'desc', label: 'Z-A' },
+  ];
+
+  const filteredRows = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    const sortKey = filterField === 'all' ? 'oldName' : filterField;
+
+    return rows
+      .filter((row) => {
+        if (!keyword) return true;
+        if (filterField !== 'all') return String(row[filterField] || '').toLowerCase().includes(keyword);
+        return `${row.oldName} ${row.newName} ${row.zalo} ${row.note}`.toLowerCase().includes(keyword);
+      })
+      .sort((a, b) => {
+        const direction = sortOrder === 'asc' ? 1 : -1;
+        return String(a[sortKey] || '').localeCompare(String(b[sortKey] || ''), 'vi') * direction;
+      });
+  }, [filterField, rows, search, sortOrder]);
+
+  const sourceRows = filteredRows.filter((row) => row.type === 'source');
+  const freeRows = filteredRows.filter((row) => row.type === 'free');
+  const totalSourceRows = rows.filter((row) => row.type === 'source').length;
+  const totalFreeRows = rows.filter((row) => row.type === 'free').length;
+
+  function renderTable(sectionRows, emptyText) {
+    return (
       <div className="registered-table-wrap">
         <table className="registered-table">
           <thead>
@@ -1207,8 +1257,13 @@ function RegisteredListPage({ rows, onHome }) {
             </tr>
           </thead>
           <tbody>
-            {rows.length ? rows.map((row) => (
-              <tr key={row.id}>
+            {sectionRows.length ? sectionRows.map((row) => (
+              <tr
+                className={admin ? 'registered-row is-clickable' : 'registered-row'}
+                key={`${row.type}-${row.id}`}
+                onClick={() => admin && onEditRow(row)}
+                title={admin ? 'Bấm để xem / chỉnh sửa thông tin' : undefined}
+              >
                 <td>{row.oldName || '—'}</td>
                 <td>{row.newName || '—'}</td>
                 <td>{row.zalo || '—'}</td>
@@ -1216,12 +1271,66 @@ function RegisteredListPage({ rows, onHome }) {
               </tr>
             )) : (
               <tr>
-                <td colSpan="4" className="table-empty">Chưa có tên nào được đăng ký.</td>
+                <td colSpan="4" className="table-empty">{emptyText}</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+    );
+  }
+
+  return (
+    <section className="list-page" id="top">
+      <div className="list-hero">
+        <span className="eyebrow"><List size={16} /> Danh sách đăng ký</span>
+        <h1>Tên đã đăng ký</h1>
+        <p>Bảng xem nhanh thành viên đã đăng ký tên. Admin có thể bấm vào từng dòng để xem và chỉnh sửa thông tin.</p>
+        <div className="stats list-stats">
+          <span className="pill"><strong>{rows.length}</strong> tổng</span>
+          <span className="pill"><strong>{totalSourceRows}</strong> theo danh sách</span>
+          <span className="pill"><strong>{totalFreeRows}</strong> tên tự do</span>
+          {admin && <span className="pill"><strong>Admin</strong> có thể sửa</span>}
+        </div>
+      </div>
+
+      <section className="list-filterbar" aria-label="Bộ lọc danh sách đã đăng ký">
+        <label className="search-box list-search-box">
+          <Search size={18} />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} type="text" placeholder="Tìm trong bảng..." />
+          {search && <button className="clear-button" type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><X size={16} /></button>}
+        </label>
+        <SelectBox icon={Filter} label="Cột lọc" options={filterOptions} value={filterField} onChange={setFilterField} />
+        <SelectBox icon={ArrowDown} label="Sắp xếp" options={sortOptions} value={sortOrder} onChange={setSortOrder} />
+        <button className="ghost-button list-reset-button" type="button" onClick={() => { setSearch(''); setFilterField('all'); setSortOrder('asc'); }}>
+          <RotateCcw size={17} /> Reset
+        </button>
+      </section>
+
+      {!filteredRows.length ? (
+        <div className="empty-state list-empty-state">
+          <h2>Không tìm thấy dữ liệu phù hợp</h2>
+          <button type="button" onClick={() => { setSearch(''); setFilterField('all'); setSortOrder('asc'); }}>Xóa lọc</button>
+        </div>
+      ) : (
+        <div className="registered-sections">
+          <section className="registered-section">
+            <header className="registered-section-header">
+              <h2>Tên theo danh sách</h2>
+              <span className="pill origin-pill">{sourceRows.length} tên</span>
+            </header>
+            {renderTable(sourceRows, 'Không có tên theo danh sách phù hợp.')}
+          </section>
+
+          <section className="registered-section">
+            <header className="registered-section-header">
+              <h2>Tên tự do</h2>
+              <span className="pill origin-pill">{freeRows.length} tên</span>
+            </header>
+            {renderTable(freeRows, 'Không có tên tự do phù hợp.')}
+          </section>
+        </div>
+      )}
 
       <div className="list-footer-actions">
         <button className="soft-button" type="button" onClick={onHome}>
@@ -1231,6 +1340,7 @@ function RegisteredListPage({ rows, onHome }) {
     </section>
   );
 }
+
 
 function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOpenDetails, settings, styleOverride }) {
   const visualStyle = styleOverride?.custom_color && styleOverride?.custom_element
