@@ -401,6 +401,7 @@ function App() {
   const [syncStatus, setSyncStatus] = useState(hasSupabaseConfig ? 'connecting' : 'local');
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState('');
+  const [floatingOpen, setFloatingOpen] = useState(false);
   const scrollFrameRef = useRef(null);
   const closeTimerRef = useRef(null);
 
@@ -1138,17 +1139,25 @@ function App() {
           )}
         </section>
 
-        <div className="floating-tools">
-          <button type="button" onClick={cycleLayout}>{layoutIcon()} <span>{layout === 'grid' ? 'Grid' : layout === 'compact' ? 'Compact' : 'List'}</span></button>
-          <button type="button" onClick={() => {
-            document.documentElement.classList.add('theme-switching');
-            setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
-            requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('theme-switching')));
-          }}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />} <span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button>
-          {admin && <button type="button" onClick={() => openModal({ type: 'freeName' })}><UserPlus size={18} /> <span>Tên tự do</span></button>}
-          {admin && <button type="button" onClick={() => openModal({ type: 'effect' })}><SlidersHorizontal size={18} /> <span>Effect</span></button>}
-          <button type="button" onClick={scrollToNextGroup}><ArrowDown size={18} /> <span>Next</span></button>
-          <button type="button" onClick={scrollToTopAnimated}><ArrowUp size={18} /> <span>Top</span></button>
+        <div className={`floating-tools ${floatingOpen ? 'is-open' : ''}`}>
+          {floatingOpen && <button className="floating-scrim" type="button" aria-label="Đóng công cụ nhanh" onClick={() => setFloatingOpen(false)} />}
+          <div className="floating-panel" aria-hidden={!floatingOpen}>
+            <button type="button" onClick={() => { cycleLayout(); setFloatingOpen(false); }}>{layoutIcon()} <span>{layout === 'grid' ? 'Grid' : layout === 'compact' ? 'Compact' : 'List'}</span></button>
+            <button type="button" onClick={() => {
+              document.documentElement.classList.add('theme-switching');
+              setTheme((current) => (current === 'dark' ? 'light' : 'dark'));
+              requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('theme-switching')));
+              setFloatingOpen(false);
+            }}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />} <span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button>
+            {admin && <button type="button" onClick={() => { openModal({ type: 'freeName' }); setFloatingOpen(false); }}><UserPlus size={18} /> <span>Tên tự do</span></button>}
+            {admin && <button type="button" onClick={() => { openModal({ type: 'effect' }); setFloatingOpen(false); }}><SlidersHorizontal size={18} /> <span>Effect</span></button>}
+            <button type="button" onClick={() => { scrollToNextGroup(); setFloatingOpen(false); }}><ArrowDown size={18} /> <span>Next</span></button>
+            <button type="button" onClick={() => { scrollToTopAnimated(); setFloatingOpen(false); }}><ArrowUp size={18} /> <span>Top</span></button>
+          </div>
+          <button className="floating-main-button" type="button" aria-expanded={floatingOpen} aria-label="Công cụ nhanh" onClick={() => setFloatingOpen((current) => !current)}>
+            {floatingOpen ? <X size={18} /> : <Settings2 size={18} />}
+            <span>Tools</span>
+          </button>
         </div>
           </>
         )}
@@ -1454,7 +1463,7 @@ function NameCard({ admin, claim, copied, index, item, onCopy, onOpenClaim, onOp
           <span>{makeDisplayName(item.name)}</span>
           {used && (
             <span className="owner-inline" title={claim.owner_name}>
-              (<UserRoundCheck size={12} /><span className="owner-name">{shortOwner(claim.owner_name)}</span>)
+              (<UserRoundCheck size={12} /><span className="owner-name">{claim.owner_name}</span>)
             </span>
           )}
         </h3>
