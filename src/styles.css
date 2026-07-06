@@ -1532,3 +1532,198 @@ button.pill {
     width: 190px;
   }
 }
+
+/* Patch: mobile layout modes */
+@media (max-width: 640px) {
+  .layout-grid .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .layout-grid .name-card {
+    min-height: 118px;
+    padding: 11px;
+    gap: 8px;
+    border-radius: 14px;
+  }
+
+  .layout-grid .tag-row {
+    gap: 5px;
+    margin-bottom: 7px;
+  }
+
+  .layout-grid .name-origin,
+  .layout-grid .style-custom-indicator {
+    font-size: 9.5px;
+    padding: 4px 6px;
+  }
+
+  .layout-grid .name-card h3 {
+    font-size: 13px;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+
+  .layout-grid .owner-inline {
+    max-width: 100%;
+    font-size: 10.5px;
+  }
+
+  .layout-grid .name-card p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+
+  .layout-grid .card-actions {
+    gap: 6px;
+  }
+
+  .layout-grid .icon-button {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .layout-compact .cards {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .layout-compact .name-card {
+    min-height: 82px;
+    padding: 11px 12px;
+  }
+
+  .layout-compact .tag-row {
+    flex-wrap: nowrap;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .layout-compact .name-card h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+
+  .layout-compact .name-card p {
+    -webkit-line-clamp: 1;
+    font-size: 12px;
+  }
+
+  .layout-list .cards {
+    display: block;
+    padding: 0;
+  }
+
+  .layout-list .name-card {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-width: 0 0 1px 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none !important;
+  }
+
+  .layout-list .name-card:hover {
+    transform: none;
+    background: rgba(255,255,255,.025);
+  }
+
+  .layout-list .name-card.is-famous {
+    box-shadow: none;
+  }
+
+  .layout-list .effect-layer {
+    display: none;
+  }
+
+  .layout-list .name-body {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .layout-list .name-card h3 {
+    order: 1;
+    flex: 1 1 116px;
+    min-width: 112px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-wrap: nowrap;
+  }
+
+  .layout-list .name-card h3 > span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .layout-list .owner-inline {
+    flex: 0 1 74px;
+    min-width: 0;
+    max-width: 74px;
+    font-size: 10px;
+  }
+
+  .layout-list .tag-row {
+    order: 2;
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    max-width: 136px;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .layout-list .name-origin,
+  .layout-list .style-custom-indicator {
+    flex: 0 0 auto;
+    font-size: 9px;
+    padding: 4px 5px;
+  }
+
+  .layout-list .name-card p {
+    order: 3;
+    flex: 0 1 82px;
+    min-width: 52px;
+    margin: 0;
+    font-size: 10.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .layout-list .card-actions {
+    display: flex;
+    gap: 5px;
+  }
+
+  .layout-list .icon-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .layout-list .icon-button svg {
+    width: 15px;
+    height: 15px;
+  }
+}
